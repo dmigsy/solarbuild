@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solar + Battery Discovery → Design Tool (Ireland 2026)</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#171f2a; --panel2:#1d2733; --line:#2b3848;
+    --text:#e7edf3; --muted:#9fb0c0; --accent:#ffb000; --accent2:#33c481;
+    --blue:#4ea1ff; --red:#ff6b6b; --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5}
+  header{padding:24px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#16202b,#0f1419)}
+  header h1{margin:0 0 4px;font-size:22px}
+  header p{margin:0;color:var(--muted);font-size:14px;max-width:760px}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  fieldset{border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--panel);margin:0 0 16px;padding:16px}
+  legend{padding:0 8px;font-weight:600;color:var(--accent);font-size:15px}
+  legend small{display:block;color:var(--muted);font-weight:400;font-size:12px;
+    padding-top:2px;max-width:640px}
+  label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+  .field{margin:0 0 12px}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)}
+  textarea{resize:vertical;min-height:54px}
+  .rank{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+  .rank span{flex:1;font-size:13px}
+  .rank select{width:120px}
+  .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 30px}
+  button{cursor:pointer;border:none;border-radius:8px;padding:12px 22px;
+    font-size:15px;font-weight:600}
+  .primary{background:var(--accent);color:#1a1200}
+  .ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  /* ---- output ---- */
+  #out{display:none}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;margin:0 0 16px}
+  .card h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
+  .card h3{margin:14px 0 6px;font-size:14px;color:var(--blue)}
+  .headline{background:linear-gradient(135deg,#1c2a1f,#16202b);border-color:#2f4a39}
+  .headline .big{font-size:20px;font-weight:700;margin:0 0 6px}
+  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);
+    border-radius:20px;padding:3px 12px;font-size:12px;margin:0 6px 6px 0;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.total td{border-top:2px solid var(--line);font-weight:700;border-bottom:none}
+  tr.grant td{color:var(--accent2)}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:4px 0;font-size:14px}
+  .flag{background:#241a1a;border:1px solid #4a2f2f;border-radius:8px;padding:10px 12px;
+    margin:6px 0;font-size:13px}
+  .flag b{color:var(--red)}
+  .ok{background:#16241c;border-color:#2f4a39}
+  .ok b{color:var(--accent2)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
+  .pill.b{background:#23344a;color:var(--blue)}
+  .pill.g{background:#1c3327;color:var(--accent2)}
+  .alt{border-left:3px solid var(--line);padding:6px 0 6px 12px;margin:8px 0}
+  .alt b{color:var(--text)}
+  .muted{color:var(--muted);font-size:13px}
+  .disclaimer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);
+    padding-top:12px;margin-top:10px}
+  @media print{
+    body{background:#fff;color:#000}
+    header,form,.btnrow,.noprint{display:none!important}
+    .card{break-inside:avoid;border-color:#ccc;background:#fff}
+    .card h2{color:#000}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>☀️ Solar + Battery Discovery → Design Tool</h1>
+  <p>Answer the discovery questionnaire below, then generate an indicative PV sizing, inverter &amp;
+  battery design, product shortlist, costing and installation plan. Tuned for Irish domestic installs,
+  2026 pricing &amp; SEAI grant rules. <b>Indicative only</b> — confirm with an SEAI-registered installer's site survey.</p>
+</header>
+
+<div class="wrap">
+<form id="form">
+
+  <!-- 1. OBJECTIVES -->
+  <fieldset>
+    <legend>1 · What matters most to you? <small>Rank these 1 (most important) to 5. It shapes whether we lean toward more panels or more battery — there are no wrong answers.</small></legend>
+    <div id="objectives"></div>
+  </fieldset>
+
+  <!-- 2. POWER CUTS -->
+  <fieldset>
+    <legend>2 · Power cuts <small>How much do outages affect you? Whether you want the lights to stay on during a cut is the single biggest factor in the system and its price.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Outages per year</label><input type="number" id="outageFreq" min="0" step="1" placeholder="e.g. 3"></div>
+      <div class="field"><label>Worst-case duration</label>
+        <select id="outageDur">
+          <option value="0">No real outages</option>
+          <option value="2">Minutes – ~1 hour</option>
+          <option value="4">A few hours</option>
+          <option value="10">Half a day+</option>
+          <option value="24">A full day or more</option>
+        </select></div>
+      <div class="field"><label>Weak/rural feeder or overhead lines?</label>
+        <select id="ruralFeeder"><option value="no">No / urban</option><option value="yes">Yes – rural / overhead / known weak</option></select></div>
+      <div class="field"><label>Backup scope wanted</label>
+        <select id="backupScope">
+          <option value="none">None needed</option>
+          <option value="essential">Essential circuits only</option>
+          <option value="whole">Whole-home</option>
+        </select></div>
+    </div>
+    <div class="field"><label>What MUST stay on? (freezer, heating pump, broadband, well pump, medical…)</label>
+      <textarea id="mustStayOn" placeholder="List critical loads"></textarea></div>
+    <div class="grid">
+      <div class="field"><label>Generator already?</label>
+        <select id="generator"><option value="no">No</option><option value="yes">Yes – battery could replace it</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 3. SUPPLY -->
+  <fieldset>
+    <legend>3 · Your electricity connection <small>A few technical details. Don&rsquo;t know one? Choose &ldquo;Unknown&rdquo; — it just flags what your installer should check on site.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Phase</label>
+        <select id="phase"><option value="1">Single-phase</option><option value="3">Three-phase</option></select></div>
+      <div class="field"><label>MIC – Max Import Capacity (kVA)</label><input type="number" id="mic" step="0.1" placeholder="typ. 12 (1ph) / 29 (3ph)"></div>
+      <div class="field"><label>Main fuse rating (A)</label>
+        <select id="mainFuse"><option value="">Unknown</option><option value="63">63 A</option><option value="80">80 A</option><option value="100">100 A</option></select></div>
+      <div class="field"><label>Earthing type</label>
+        <select id="earthing"><option value="pme">PME / TN-C-S</option><option value="tt">TT (rod)</option><option value="unknown">Unknown</option></select></div>
+      <div class="field"><label>Fuse board &ndash; any spare ways?</label>
+        <select id="spareWays"><option value="yes">Yes, spare ways</option><option value="no">No / full</option><option value="unknown">Unknown</option></select></div>
+      <div class="field"><label>Smart meter installed?</label>
+        <select id="smartMeter"><option value="yes">Yes</option><option value="no">No / not yet</option></select></div>
+      <div class="field"><label>Distance: meter ↔ inverter location (m)</label><input type="number" id="cableRun" step="1" placeholder="e.g. 8"></div>
+    </div>
+  </fieldset>
+
+  <!-- 4. CONSUMPTION -->
+  <fieldset>
+    <legend>4 · How much electricity you use <small>The key number behind the whole design. Most accurate from a recent bill or your smart-meter data.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Annual consumption (kWh) *</label><input type="number" id="annualKwh" step="50" placeholder="e.g. 6000"></div>
+      <div class="field"><label>On a smart / dynamic tariff?</label>
+        <select id="dynamicTariff"><option value="no">No – flat 24 hr rate</option><option value="dayNight">Day/Night (e.g. Smart or NightSaver)</option><option value="dynamic">Dynamic / EV (cheap overnight window)</option></select></div>
+      <div class="field"><label>Standard import rate (c/kWh)</label><input type="number" id="importRate" step="0.5" value="35" placeholder="35"></div>
+      <div class="field"><label>Off-peak / night rate (c/kWh)</label><input type="number" id="nightRate" step="0.5" placeholder="e.g. 8 (EV) / 13"></div>
+      <div class="field"><label>Home during the day?</label>
+        <select id="dayOccupancy"><option value="out">Out 9–5 (low daytime use)</option><option value="mixed">Mixed</option><option value="home">Home most days</option></select></div>
+      <div class="field"><label>Heating type</label>
+        <select id="heating"><option value="gas">Gas</option><option value="oil">Oil</option><option value="electric">Electric (storage/panel)</option><option value="heatpump">Heat pump</option></select></div>
+    </div>
+    <div class="field"><label>Big electrical loads you have <span class="hint">— tick any; high-power items affect peak demand and what a battery can keep running in a power cut</span></label>
+      <div class="grid">
+        <div><label><input type="checkbox" id="loadImmersion" style="width:auto"> Immersion heater</label></div>
+        <div><label><input type="checkbox" id="loadShower" style="width:auto"> Electric / power shower</label></div>
+        <div><label><input type="checkbox" id="loadDryer" style="width:auto"> Tumble dryer</label></div>
+        <div><label><input type="checkbox" id="loadDish" style="width:auto"> Dishwasher</label></div>
+        <div><label><input type="checkbox" id="loadOven" style="width:auto"> Electric oven / hob</label></div>
+        <div><label><input type="checkbox" id="loadAC" style="width:auto"> Air-con</label></div>
+        <div><label><input type="checkbox" id="loadHotTub" style="width:auto"> Hot tub</label></div>
+        <div><label><input type="checkbox" id="loadPool" style="width:auto"> Pool / pond pump</label></div>
+        <div><label><input type="checkbox" id="loadWorkshop" style="width:auto"> Workshop / heavy tools</label></div>
+      </div></div>
+  </fieldset>
+
+  <!-- 5. ROOF -->
+  <fieldset>
+    <legend>5 · Your roof <small>Where the panels go — this sets how many you can fit and how much power they&rsquo;ll make.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Mounting</label>
+        <select id="mount"><option value="roof">Roof mount</option><option value="ground">Ground mount</option><option value="both">Both</option></select></div>
+      <div class="field"><label>Best roof orientation</label>
+        <select id="orientation">
+          <option value="950">South</option>
+          <option value="890">South-East / South-West</option>
+          <option value="800">East / West</option>
+          <option value="820">East + West split</option>
+          <option value="780">Flat / other</option>
+        </select></div>
+      <div class="field"><label>Usable area – estimate as panel count</label><input type="number" id="panelCap" step="1" placeholder="max panels that fit, e.g. 16"></div>
+      <div class="field"><label>Pitch</label>
+        <select id="pitch"><option value="ok">Normal (20–45°)</option><option value="shallow">Shallow / flat</option><option value="steep">Steep</option></select></div>
+      <div class="field"><label>Roof covering</label>
+        <select id="cover"><option value="tile">Tile</option><option value="slate">Slate</option><option value="metal">Metal</option><option value="felt">Felt / flat</option></select></div>
+      <div class="field"><label>Roof age / condition</label>
+        <select id="roofAge"><option value="good">Good / recent</option><option value="aging">Aging (15 yr+)</option><option value="poor">Poor – may need work</option></select></div>
+      <div class="field"><label>Shading</label>
+        <select id="shading"><option value="none">None / minimal</option><option value="some">Some (chimney/dormer/partial)</option><option value="heavy">Significant (trees/buildings)</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 6. EXISTING PV -->
+  <fieldset>
+    <legend>6 · Do you already have solar? <small>Adding a battery to existing panels works differently from a fresh install, so it&rsquo;s worth asking.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Existing solar?</label>
+        <select id="existingPV"><option value="no">No – new install</option><option value="yes">Yes – existing array</option></select></div>
+      <div class="field"><label>Existing system size (kWp)</label><input type="number" id="existingKwp" step="0.1" placeholder="e.g. 4"></div>
+      <div class="field"><label>Keep existing setup, or replace?</label>
+        <select id="existingPlan"><option value="ac">Keep my panels, add a battery alongside</option><option value="dc">Replace with a new all-in-one system</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 7. BATTERY SCOPE -->
+  <fieldset>
+    <legend>7 · Battery preferences <small>Any leanings on battery size or brand? Happy to leave it to us? Pick &ldquo;Open&rdquo; and we&rsquo;ll recommend the best fit.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Target usable battery (kWh)</label><input type="number" id="targetBattery" step="0.5" placeholder="blank = let tool size it"></div>
+      <div class="field"><label>Brand leaning</label>
+        <select id="brandLean">
+          <option value="open">Open / no preference</option>
+          <option value="powerwall">Tesla Powerwall</option>
+          <option value="sigenergy">Sigenergy</option>
+          <option value="value">Value brands (Solis+Dyness / Anker)</option>
+          <option value="victron">Victron (off-grid / DIY)</option>
+        </select></div>
+      <div class="field"><label>App control &amp; automation?</label>
+        <select id="appControl"><option value="setforget">Set-and-forget</option><option value="app">Wants app / data / automation</option></select></div>
+      <div class="field"><label>Open to other ecosystems?</label>
+        <select id="openEco"><option value="yes">Yes</option><option value="no">No – fixed on a brand</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 8. EV / FUTURE -->
+  <fieldset>
+    <legend>8 · EV &amp; future plans <small>Things that mean more electricity later — an EV or heat pump changes how we size things today.</small></legend>
+    <div class="grid">
+      <div class="field"><label>EV?</label>
+        <select id="ev"><option value="no">No</option><option value="planned">Planned</option><option value="yes">Yes, have one</option></select></div>
+      <div class="field"><label>Home EV charger?</label>
+        <select id="evCharger"><option value="none">None / not needed</option><option value="want">Want one included</option><option value="have">Already have one</option></select></div>
+      <div class="field"><label>Interested in V2G / V2H?</label>
+        <select id="v2g"><option value="no">No</option><option value="yes">Yes</option></select></div>
+      <div class="field"><label>Heat pump planned?</label>
+        <select id="heatpumpPlan"><option value="no">No</option><option value="yes">Yes, future</option></select></div>
+      <div class="field"><label>Will actively load-shift (timers)?</label>
+        <select id="loadShift"><option value="no">No</option><option value="yes">Yes</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 9. COMMERCIALS -->
+  <fieldset>
+    <legend>9 · Budget &amp; grant <small>So the costing and payback come out realistic for your situation.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Budget ceiling (€)</label><input type="number" id="budget" step="500" placeholder="blank = no cap"></div>
+      <div class="field"><label>SEAI grant eligible? (home connected before end-2020)</label>
+        <select id="grantEligible"><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select></div>
+      <div class="field"><label>Export (CEG) rate with supplier (c/kWh)</label><input type="number" id="cegRate" step="0.5" value="20" placeholder="20"></div>
+      <div class="field"><label>Funding</label>
+        <select id="funding"><option value="cash">Cash</option><option value="finance">Finance</option><option value="grant">Grant-dependent</option></select></div>
+    </div>
+  </fieldset>
+
+  <!-- 10. LOGISTICS -->
+  <fieldset>
+    <legend>10 · A couple of practical things <small>Last questions — then hit Generate.</small></legend>
+    <div class="grid">
+      <div class="field"><label>Protected / coastal / planning-sensitive site?</label>
+        <select id="planning"><option value="no">No – standard exempt</option><option value="yes">Yes – check planning</option></select></div>
+      <div class="field"><label>Install approach</label>
+        <select id="approach"><option value="turnkey">Full turnkey</option><option value="diy">Some DIY appetite</option></select></div>
+    </div>
+  </fieldset>
+
+  <div class="btnrow">
+    <button type="button" class="primary" onclick="generate()">Generate design &amp; plan ▸</button>
+    <button type="button" class="ghost" onclick="loadDemo()">Fill with example</button>
+    <button type="button" class="ghost" onclick="window.print()">Print / save PDF</button>
+  </div>
+</form>
+
+<div id="out"></div>
+</div>
+
+<script>
+/* =========================================================================
+   PRICING & ASSUMPTIONS  —  Ireland, 2026.
+   Modelled on typical 2026 Irish installed prices. Model split: PV €/kWp
+   (panels+mounting+install, no inverter) + a battery line that carries the
+   single hybrid inverter (base) plus the storage modules (perKwh). Totals
+   reproduce typical before/after-grant system prices. Edit freely.
+   ========================================================================= */
+const PRICING = {
+  panelW: 440,                 // W per panel (2026 typical)
+  // PV €/kWp — panels + mounting + scaffold + labour + DC wiring, EXCLUDING the
+  // inverter (priced once in the battery line). Falls with scale. 0% VAT.
+  // Set so PV+battery totals match typical 2026 quotes (e.g. 11 kWp+20 kWh ≈ €16.4k).
+  pvRate: kwp =>
+        kwp <= 3 ? 1100
+      : kwp <= 6 ? 850
+      : kwp <= 10 ? 780
+      : 720,
+  groundMountExtra: 1500,      // frames/trenching premium over roof (~€1,500)
+  evCharger: 1100,             // installed 7 kW charger (SEAI €300 EV-charger grant separate)
+  ttEarthingExtra: 300,        // EPS earth rod / RCD work on TT supplies (earth rod ~€250)
+  consumerUnitWork: 700,       // whole-home backup: manual changeover ~€450, Sig auto-gateway ~€1,650
+  // Battery products. base = hybrid inverter + install + gateway; perKwh = storage
+  // module. all-in €/kWh = (base + kwh*perKwh)/kwh. Set from typical 2026 module
+  // prices (Sig 10 kWh module ~€3k; Dyness 10 kWh add-on ~€1.8k) and system totals.
+  batteries: {
+    sigenergy: { name:"Sigenergy SigenStor", base:2800, perKwh:360, min:5, step:5, max:48,
+        phase:[1,3], hybrid:true, eps:"whole", evReady:true, premium:true,
+        note:"Premium all-in-one, modular 5–48 kWh, 1- & 3-phase, AI tariff control, auto-gateway backup, optional DC EV charger with V2G/V2H." },
+    powerwall: { name:"Tesla Powerwall 3", unit:13.5, perUnit:8000, addUnit:6500,
+        phase:[1], hybrid:true, eps:"whole", maxKwh:40.5,
+        note:"13.5 kWh LFP with built-in 11.5 kW solar inverter; whole-home backup; Storm Watch. Less common in IE quotes." },
+    solis:     { name:"Solis hybrid + Dyness battery", base:1900, perKwh:330, min:5, step:5, max:30,
+        phase:[1,3], hybrid:true, eps:"essential",
+        note:"Most-quoted value combo in IE: Solis hybrid inverter + Dyness modules, works with a manual changeover switch, mix-and-match batteries." },
+    anker:     { name:"Anker SOLIX all-in-one", base:1850, perKwh:340, min:5, step:5, max:30,
+        phase:[1], hybrid:true, eps:"essential", appGood:true,
+        note:"Tidy budget all-in-one, single-phase, well-regarded app; EPS on essential circuits." },
+    victron:   { name:"Victron (MultiPlus-II + Pylontech)", base:3200, perKwh:340, min:5, step:5, max:60,
+        phase:[1,3], hybrid:true, eps:"whole", offgrid:true,
+        note:"Off-grid / prosumer ecosystem: bulletproof, endlessly configurable, best-in-class generator + multi-source integration and true island-mode. Needs expertise to commission; engineer-facing VRM app. Overkill (and pricier) for a standard grid-tie install." },
+  },
+  // SEAI grant (2026): €700/kWp first 2 kWp, €200/kWp next 2 kWp, cap €1,800.
+  grant: kwp => Math.min(1800, Math.min(kwp,2)*700 + Math.max(0,Math.min(kwp,4)-2)*200),
+};
+
+/* ---------------- objectives table ---------------- */
+const OBJ = [
+  ["bill","Cut electricity bill"],
+  ["backup","Backup during power cuts (resilience)"],
+  ["export","Maximise export income"],
+  ["selfsuff","Self-sufficiency / off-grid leanings"],
+  ["evsolar","EV charging from solar"],
+  ["future","Future-proofing (heat pump, EV later)"],
+  ["carbon","Environmental / carbon"],
+];
+const objDiv = document.getElementById('objectives');
+OBJ.forEach(([id,label])=>{
+  const row=document.createElement('div'); row.className='rank';
+  row.innerHTML=`<span>${label}</span>
+    <select id="obj_${id}">
+      <option value="">–</option><option>1</option><option>2</option>
+      <option>3</option><option>4</option><option>5</option></select>`;
+  objDiv.appendChild(row);
+});
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value)||0;
+const val = id => $(id).value;
+const chk = id => $(id).checked;
+const eur = n => "€"+Math.round(n).toLocaleString('en-IE');
+const round1 = n => Math.round(n*10)/10;
+
+/* ============================ ENGINE ============================ */
+function generate(){
+  const a = collect();
+  if(!a.annualKwh){ alert("Enter annual consumption (kWh) — it drives the whole design."); return; }
+
+  const pv      = sizePV(a);
+  const battery = sizeBattery(a, pv);
+  const product = pickProduct(a, battery);
+  const cost    = costSystem(a, pv, battery, product);
+  const econ    = economics(a, pv, battery, product, cost);
+  const led     = classify(a);
+
+  render(a, pv, battery, product, cost, econ, led);
+  $('out').style.display='block';
+  $('out').scrollIntoView({behavior:'smooth'});
+}
+
+/* design philosophy: battery-led vs PV-led */
+function classify(a){
+  const backupRank = a.obj.backup, exportRank = a.obj.export;
+  const wantsBackup = a.backupScope!=="none" && (a.outageDur>=4 || a.ruralFeeder==="yes" || backupRank===1 || backupRank===2);
+  if(wantsBackup) return {type:"Battery-led (resilience priority)", wantsBackup:true};
+  if(exportRank===1 || exportRank===2) return {type:"PV-led (export/generation priority)", wantsBackup:false};
+  return {type:"Balanced (bill reduction priority)", wantsBackup:false};
+}
+
+/* ---- PV sizing ---- */
+function sizePV(a){
+  const yieldPerKwp = a.orientation;                 // kWh per kWp per yr
+  const panelKwp = PRICING.panelW/1000;
+  // target to offset most consumption; battery raises self-use so allow full offset
+  let target = a.annualKwh / yieldPerKwp;
+  // constraints
+  const roofCap = a.panelCap>0 ? a.panelCap*panelKwp : 99;
+  // inverter / grid export cap. 1-ph NC6 export ≤ 25 A (~5.75 kW) without DSO consent.
+  // Irish hybrid installs deliberately oversize the DC array ~2x the inverter and
+  // export-limit it, since battery + self-use soak the midday peak (10–11 kWp DC
+  // on a 5 kW single-phase inverter is common). 3-ph scales with MIC.
+  const acCap = a.phase===3 ? (a.mic>0? a.mic*0.9 : 15) : 5.75;
+  const dcCap = acCap*2.0;
+  // budget cap (rough: leave ~45% of budget for battery if backup wanted)
+  let budgetCap = 99;
+  if(a.budget>0){
+    const pvBudget = a.budget * (a.backupScope==="none"?0.92:0.55);
+    budgetCap = pvBudget / 850;
+  }
+  let kwp = Math.min(target, roofCap, dcCap, budgetCap);
+  kwp = Math.max(kwp, 1.5);
+  let panels = Math.max(3, Math.round(kwp/panelKwp));
+  kwp = round1(panels*panelKwp);
+
+  const reasons=[];
+  reasons.push(`Consumption ${a.annualKwh.toLocaleString()} kWh ÷ ${yieldPerKwp} kWh/kWp yield ⇒ ~${round1(target)} kWp to offset usage.`);
+  if(a.panelCap>0 && Math.abs(roofCap-kwp)<0.3) reasons.push(`Capped by roof space (${a.panelCap} panels).`);
+  if(Math.abs(dcCap-kwp)<0.3) reasons.push(`Capped at ~${round1(dcCap)} kWp by the ${a.phase===3?'3-phase':'single-phase'} inverter (${acCap} kW AC, export-limited, ~2× DC oversize).`);
+  if(a.budget>0 && Math.abs(budgetCap-kwp)<0.4) reasons.push(`Trimmed to fit budget.`);
+  if(a.shading==="heavy") reasons.push(`Heavy shading — recommend panel-level optimisers / micro-inverters.`);
+  if(a.existingPV==="yes") reasons.push(`Existing ${a.existingKwp} kWp array noted — see retrofit flags.`);
+
+  const annualGen = Math.round(kwp*yieldPerKwp);
+  return {kwp, panels, panelKwp, acCap, annualGen, yieldPerKwp, reasons};
+}
+
+/* ---- battery sizing ---- */
+function sizeBattery(a, pv){
+  if(a.targetBattery>0){
+    return {kwh:a.targetBattery, reasons:[`Using your specified target of ${a.targetBattery} kWh usable.`]};
+  }
+  const daily = a.annualKwh/365;
+  const reasons=[];
+  let need = 0;
+
+  // resilience component
+  if(a.backupScope==="whole"){ need = Math.max(need, daily*0.6); reasons.push(`Whole-home backup: ~${round1(daily*0.6)} kWh covers an evening + overnight at ~60% of daily use.`);}
+  else if(a.backupScope==="essential"){ need = Math.max(need, Math.min(daily*0.3, 8)); reasons.push(`Essential-circuit backup: ~${round1(Math.min(daily*0.3,8))} kWh for fridge/freezer, broadband, lights, heating pump.`);}
+
+  // arbitrage / self-consumption component
+  if(a.dynamicTariff!=="no" || a.loadShift==="yes"){
+    const arb = daily*0.5;
+    if(arb>need){ need=arb; reasons.push(`Smart-tariff arbitrage: ~${round1(arb)} kWh to shift cheap night charge into day/peak use.`);}
+    else reasons.push(`Smart-tariff arbitrage also supported by this size.`);
+  } else {
+    const sc = a.dayOccupancy==="out" ? daily*0.45 : daily*0.3;
+    if(sc>need){ need=sc; reasons.push(`Self-consumption: ~${round1(sc)} kWh to store daytime solar for the evening peak.`);}
+  }
+
+  // EV nudge
+  if(a.ev==="yes" && a.obj.evsolar && a.obj.evsolar<=2){ need+=2; reasons.push(`+2 kWh headroom for solar EV top-ups.`); }
+
+  // sanity clamp
+  need = Math.max(5, Math.min(need, 30));
+  // budget clamp
+  if(a.budget>0){
+    const batBudget = a.budget*0.5;
+    const maxKwh = batBudget/500;
+    if(maxKwh<need){ need=Math.max(5,maxKwh); reasons.push(`Trimmed to fit budget.`); }
+  }
+  return {kwh:Math.round(need), reasons};
+}
+
+/* ---- product selection ---- */
+function pickProduct(a, battery){
+  const B=PRICING.batteries;
+  const cand=[];
+  const phaseOK = p => p.phase.includes(a.phase);
+  const score=(key,p)=>{
+    let s=0; const r=[];
+    if(!phaseOK(p)){ return null; }
+    if(a.phase===3 && p.phase.includes(3)){ s+=3; r.push("native 3-phase"); }
+    if(battery.kwh>13.5 && p.perKwh){ s+=1; r.push("flexible modular sizing"); }
+    if(a.backupScope==="whole" && p.eps==="whole"){ s+=2; r.push("whole-home backup"); }
+    if((a.ev==="yes"||a.ev==="planned") && a.v2g==="yes" && p.evReady){ s+=3; r.push("integrated EV charger + V2G/V2H"); }
+    if(a.appControl==="app" && (key==="sigenergy"||p.appGood)){ s+=1; r.push("strong app/automation"); }
+    if(a.funding!=="cash" || a.budget>0){ if(key==="solis"||key==="anker"){ s+=1; r.push("better value"); } }
+    // Victron / off-grid signals. Concrete drivers (a generator to integrate, DIY
+    // appetite) carry the weight; a mere self-sufficiency *leaning* (#2) is left to
+    // Sigenergy's big modular battery. Victron only wins on a generator/DIY signal
+    // or when off-grid is the explicit #1 objective — otherwise it stays an alt.
+    if(p.offgrid){
+      let off=0;
+      if(a.generator==="yes"){ off+=3; r.push("integrates an existing generator"); }
+      if(a.approach==="diy"){ off+=2; r.push("DIY / configurability appetite"); }
+      if(a.obj.selfsuff===1){ off+=2; r.push("off-grid is the #1 objective"); }
+      if(off>=2 && a.openEco==="yes"){ off+=1; r.push("open ecosystem"); }
+      s+=off;
+    }
+    if(a.brandLean===key){ s+=4; r.push("matches your brand leaning"); }
+    if(a.brandLean==="value" && (key==="solis"||key==="anker")){ s+=3; r.push("value brand"); }
+    return {key,p,score:s,reasons:r};
+  };
+  for(const k in B){ const c=score(k,B[k]); if(c) cand.push(c); }
+  cand.sort((x,y)=>y.score-x.score);
+
+  // hard guard: Powerwall is single-phase per unit
+  if(a.phase===3){
+    const pw=cand.find(c=>c.key==="powerwall");
+    if(pw) pw.reasons.push("note: 1-ph per unit — needs 3 for balanced 3-ph backup");
+  }
+  return {primary:cand[0], alts:cand.slice(1,3)};
+}
+
+/* ---- costing ---- */
+function batteryCost(p, kwh){
+  if(p.perUnit!=null){
+    const units=Math.max(1,Math.ceil(kwh/p.unit));
+    return {price:p.perUnit + (units-1)*p.addUnit, detail:`${units}× unit, ${round1(units*p.unit)} kWh incl. inverter`};
+  }
+  const price = (p.base||0) + kwh*p.perKwh;
+  return {price, detail:`${kwh} kWh + hybrid inverter (${eur(price/kwh)}/kWh all-in)`};
+}
+function costSystem(a, pv, battery, product){
+  const rows=[];
+  let pvCost = pv.kwp * PRICING.pvRate(pv.kwp);
+  const p = product.primary.p;
+  if(a.mount==="ground"||a.mount==="both") pvCost += PRICING.groundMountExtra;
+  rows.push(["PV array (panels + mounting + install)",`${pv.panels}× ${PRICING.panelW}W = ${pv.kwp} kWp — inverter in battery line`,pvCost]);
+
+  const bc = batteryCost(p, battery.kwh);
+  rows.push(["Battery + hybrid inverter",`${p.name} — ${bc.detail}`,bc.price]);
+
+  if(a.evCharger==="want"){
+    if(p.evReady && (a.v2g==="yes")) rows.push(["EV charger","Integrated in Sigenergy (V2G)",600]);
+    else rows.push(["EV charger","7 kW wall charger, installed",PRICING.evCharger]);
+  }
+  if(a.earthing==="tt" && a.backupScope!=="none") rows.push(["TT earthing / EPS works","Earth rod + RCD arrangement for backup",PRICING.ttEarthingExtra]);
+  if(a.backupScope==="whole") rows.push(["Backup change-over / board work","Whole-home EPS integration",PRICING.consumerUnitWork]);
+  if(a.cableRun>15) rows.push(["Extended cable run",`${a.cableRun} m meter→inverter`,Math.round((a.cableRun-15)*22)]);
+
+  const subtotal = rows.reduce((s,r)=>s+r[2],0);
+  const grant = a.grantEligible==="yes" ? PRICING.grant(pv.kwp) : 0;
+  const net = subtotal - grant;
+  return {rows, subtotal, grant, net};
+}
+
+/* ---- economics ---- */
+function economics(a, pv, battery, product, cost){
+  const importR = (num('importRate')||35)/100;
+  const nightR  = (num('nightRate')|| (a.dynamicTariff==="dynamic"?10:13))/100;
+  const cegR    = (num('cegRate')||20)/100;
+  const gen = pv.annualGen;
+
+  // self-consumption fraction: battery + occupancy dependent
+  let scFrac = 0.30;
+  if(battery.kwh>=5) scFrac += 0.25;
+  if(battery.kwh>=10) scFrac += 0.10;
+  if(a.dayOccupancy==="home") scFrac += 0.05;
+  scFrac = Math.min(scFrac, 0.75);
+
+  const selfUsed = gen*scFrac;
+  const exported = gen-selfUsed;
+  const selfSaving = selfUsed*importR;
+  let exportIncome = exported*cegR;
+  // €400/yr tax disregard — income above is fine; just note it
+  // arbitrage: night-charge battery, displace peak import (only if smart tariff)
+  let arbSaving = 0;
+  if(a.dynamicTariff!=="no" && battery.kwh>=5){
+    const usable = battery.kwh*0.9, cyclesPerYr = 250; // conservative blended night-cycles
+    arbSaving = usable*cyclesPerYr*Math.max(0, importR-nightR);
+  }
+  const annual = selfSaving+exportIncome+arbSaving;
+  const payback = annual>0 ? cost.net/annual : null;
+  return {selfUsed:Math.round(selfUsed), exported:Math.round(exported), scFrac,
+    selfSaving, exportIncome, arbSaving, annual, payback, importR, nightR, cegR};
+}
+
+/* ============================ COLLECT ============================ */
+function collect(){
+  const obj={}; OBJ.forEach(([id])=> obj[id]=parseInt(val('obj_'+id))||null);
+  return {
+    obj,
+    outageFreq:num('outageFreq'), outageDur:parseInt(val('outageDur')),
+    ruralFeeder:val('ruralFeeder'), backupScope:val('backupScope'),
+    mustStayOn:val('mustStayOn'), generator:val('generator'),
+    phase:parseInt(val('phase')), mic:num('mic'), mainFuse:val('mainFuse'),
+    earthing:val('earthing'), spareWays:val('spareWays'), smartMeter:val('smartMeter'), cableRun:num('cableRun'),
+    annualKwh:num('annualKwh'), dynamicTariff:val('dynamicTariff'),
+    dayOccupancy:val('dayOccupancy'), heating:val('heating'),
+    loads:{ immersion:chk('loadImmersion'), shower:chk('loadShower'), dryer:chk('loadDryer'),
+            dish:chk('loadDish'), oven:chk('loadOven'), ac:chk('loadAC'),
+            hottub:chk('loadHotTub'), pool:chk('loadPool'), workshop:chk('loadWorkshop') },
+    mount:val('mount'), orientation:parseInt(val('orientation')), panelCap:num('panelCap'),
+    pitch:val('pitch'), cover:val('cover'), roofAge:val('roofAge'), shading:val('shading'),
+    existingPV:val('existingPV'), existingKwp:num('existingKwp'), existingPlan:val('existingPlan'),
+    targetBattery:num('targetBattery'), brandLean:val('brandLean'),
+    appControl:val('appControl'), openEco:val('openEco'),
+    ev:val('ev'), evCharger:val('evCharger'), v2g:val('v2g'),
+    heatpumpPlan:val('heatpumpPlan'), loadShift:val('loadShift'),
+    budget:num('budget'), grantEligible:val('grantEligible'), funding:val('funding'),
+    planning:val('planning'), approach:val('approach'),
+  };
+}
+
+/* ============================ RENDER ============================ */
+function render(a, pv, battery, product, cost, econ, led){
+  const p=product.primary;
+  let h='';
+
+  /* headline */
+  h+=`<div class="card headline">
+    <div class="big">${pv.kwp} kWp solar · ${battery.kwh} kWh battery · ${p.p.name}</div>
+    <div><span class="pill ${led.wantsBackup?'g':'b'}">${led.type}</span></div>
+    <div style="margin-top:8px">
+      <span class="tag">${pv.panels} × ${PRICING.panelW}W panels</span>
+      <span class="tag">~${pv.annualGen.toLocaleString()} kWh/yr generated</span>
+      <span class="tag">${a.phase===3?'3-phase':'single-phase'}</span>
+      <span class="tag">Net cost ${eur(cost.net)}</span>
+      ${econ.payback?`<span class="tag">~${round1(econ.payback)} yr payback</span>`:''}
+    </div></div>`;
+
+  /* PV */
+  h+=`<div class="card"><h2>☀️ Solar array</h2>
+    <table>
+      <tr><td>Array size</td><td class="num">${pv.kwp} kWp (${pv.panels} panels)</td></tr>
+      <tr><td>Inverter AC cap applied</td><td class="num">${pv.acCap} kW</td></tr>
+      <tr><td>Yield assumption</td><td class="num">${pv.yieldPerKwp} kWh/kWp/yr</td></tr>
+      <tr><td>Expected generation</td><td class="num">${pv.annualGen.toLocaleString()} kWh/yr</td></tr>
+    </table>
+    <h3>Sizing rationale</h3><ul>${pv.reasons.map(r=>`<li>${r}</li>`).join('')}</ul></div>`;
+
+  /* inverter */
+  const epsTxt = a.backupScope==="none" ? "No backup configured (grid-tie only)."
+    : `EPS backup: ${p.p.eps==="whole"?"whole-home capable":"essential-circuits"}.`;
+  h+=`<div class="card"><h2>🔌 Inverter &amp; topology</h2>
+    <ul>
+      <li><b>${p.p.hybrid?'Hybrid':'String'} inverter</b> — ${p.p.hybrid?'PV + battery managed in one unit (DC-coupled).':'separate PV inverter.'}</li>
+      <li>Supply: <b>${a.phase===3?'three-phase':'single-phase'}</b>${a.mic?`, MIC ${a.mic} kVA`:''}. ${a.phase===1?'NC6 caps grid-tied inverters at 25 A (~5.75 kW) single-phase without a DSO (NC7) application; you can fit a larger inverter and export-limit it.':'3-phase allows larger inverter within MIC.'}</li>
+      <li>${epsTxt}</li>
+      ${a.existingPV==="yes"?`<li>Existing PV: ${a.existingPlan==="ac"?'AC-couple battery, keep current inverter.':'replace with hybrid (DC-couple) — current inverter retired.'}</li>`:''}
+    </ul></div>`;
+
+  /* battery */
+  h+=`<div class="card"><h2>🔋 Battery</h2>
+    <table><tr><td>Recommended usable capacity</td><td class="num">${battery.kwh} kWh</td></tr></table>
+    <h3>Sizing rationale</h3><ul>${battery.reasons.map(r=>`<li>${r}</li>`).join('')}</ul></div>`;
+
+  /* products */
+  let altHtml = product.alts.map(c=>`<div class="alt"><b>${c.p.name}</b> — ${c.reasons.length?c.reasons.join(', '):'viable alternative'}.<br><span class="muted">${c.p.note}</span></div>`).join('');
+  h+=`<div class="card"><h2>📦 Recommended products</h2>
+    <h3>Primary: ${p.p.name}</h3>
+    <p class="muted">${p.p.note}</p>
+    <p>Why: ${p.reasons.length?p.reasons.join(', '):'best overall fit for your phase, backup and budget profile'}.</p>
+    ${altHtml?`<h3>Alternatives</h3>${altHtml}`:''}</div>`;
+
+  /* costing */
+  let rows = cost.rows.map(r=>`<tr><td>${r[0]}<br><span class="muted">${r[1]}</span></td><td class="num">${eur(r[2])}</td></tr>`).join('');
+  h+=`<div class="card"><h2>💶 Indicative costing</h2>
+    <table>
+      <tr><th>Item</th><th style="text-align:right">Cost (0% VAT)</th></tr>
+      ${rows}
+      <tr class="total"><td>Subtotal</td><td class="num">${eur(cost.subtotal)}</td></tr>
+      ${cost.grant?`<tr class="grant"><td>Less SEAI grant</td><td class="num">– ${eur(cost.grant)}</td></tr>`:''}
+      <tr class="total"><td>Net cost</td><td class="num">${eur(cost.net)}</td></tr>
+    </table>
+    <p class="muted">Battery &amp; PV bought on one contract qualify for 0% VAT. Grant applies to PV only (max €1,800), not the battery. ${a.grantEligible!=="yes"?'<b>Grant not applied</b> — property must be connected before end-2020 &amp; installer SEAI-registered.':''}</p></div>`;
+
+  /* economics */
+  h+=`<div class="card"><h2>📈 Economics (indicative)</h2>
+    <table>
+      <tr><td>Generation</td><td class="num">${pv.annualGen.toLocaleString()} kWh/yr</td></tr>
+      <tr><td>Self-consumed (${Math.round(econ.scFrac*100)}%)</td><td class="num">${econ.selfUsed.toLocaleString()} kWh</td></tr>
+      <tr><td>Exported</td><td class="num">${econ.exported.toLocaleString()} kWh</td></tr>
+      <tr><td>Bill saving (self-use @ ${Math.round(econ.importR*100)}c)</td><td class="num">${eur(econ.selfSaving)}/yr</td></tr>
+      <tr><td>Export income (@ ${Math.round(econ.cegR*100)}c CEG)</td><td class="num">${eur(econ.exportIncome)}/yr</td></tr>
+      ${econ.arbSaving>0?`<tr><td>Tariff arbitrage (night→peak)</td><td class="num">${eur(econ.arbSaving)}/yr</td></tr>`:''}
+      <tr class="total"><td>Total annual benefit</td><td class="num">${eur(econ.annual)}/yr</td></tr>
+      ${econ.payback?`<tr class="total"><td>Simple payback</td><td class="num">~${round1(econ.payback)} years</td></tr>`:''}
+    </table>
+    <p class="muted">First €400/yr of export income is tax-free (disregard to end-2028). Payback excludes finance costs &amp; future price inflation; real savings rise as electricity prices climb.</p></div>`;
+
+  /* install plan + flags */
+  h+=`<div class="card"><h2>🛠️ Installation plan</h2><ol>
+    <li><b>Survey &amp; DSO paperwork</b> — confirm roof structure, MIC, earthing; submit NC6 (≤25 A / ~5.75 kW export) or NC7 connection notification.</li>
+    <li><b>Scaffold &amp; mount</b> — ${pv.panels} panels on ${a.cover} roof${a.mount!=="roof"?` (+ ${a.mount} mount)`:''}.</li>
+    <li><b>Electrical</b> — install ${p.p.hybrid?'hybrid':'string'} inverter + ${p.p.name}; ${a.backupScope!=="none"?'wire EPS/backup change-over':'grid-tie connection'}.</li>
+    <li><b>Commission &amp; register</b> — supplier microgen (NC6 confirmation) for CEG export payments${a.grantEligible==="yes"?'; submit SEAI grant claim':''}.</li>
+  </ol>`;
+
+  /* flags */
+  const flags=[];
+  if(a.earthing==="tt" && a.backupScope!=="none") flags.push("TT earthing complicates EPS — dedicated backup earth rod &amp; RCD scheme needed (costed above).");
+  if(a.phase===3 && p.key==="powerwall") flags.push("Powerwall 3 is single-phase per unit — 3-phase backup needs one per phase. Sigenergy/Solis handle 3-phase natively.");
+  if(a.spareWays==="no") flags.push("Fuse board reported full — may need a sub-board or upgrade to add the backup circuits.");
+  if(a.roofAge==="poor") flags.push("Poor roof condition — re-roof or repair before mounting; panels last 25+ yrs.");
+  if(a.shading==="heavy") flags.push("Significant shading — use optimisers/micro-inverters or generation will disappoint.");
+  if(a.mount!=="roof" && a.planning==="yes") flags.push("Ground mount on a sensitive/coastal/protected site — check planning exemption limits before proceeding.");
+  if(a.smartMeter==="no") flags.push("No smart meter yet — needed for CEG export payments &amp; for dynamic-tariff arbitrage. Request one.");
+  if(a.mic>0 && a.phase===1 && a.mic<12) flags.push(`Low MIC (${a.mic} kVA) on single-phase — heavy simultaneous loads (EV + immersion + heat pump) may trip; consider load management.`);
+  if(!a.annualKwh) flags.push("Annual kWh estimated — pull real smart-meter HDF data to refine sizing.");
+  if(a.heatpumpPlan==="yes") flags.push("Heat pump planned — future winter load is large &amp; solar-poor; size import &amp; consider a larger battery / time-of-use tariff.");
+  if(a.loads && a.loads.shower && a.backupScope!=="none") flags.push("Electric/power shower (~9 kW) draws more than most batteries can deliver during a power cut, so it likely won&rsquo;t run on backup. Plan to leave it off the backup circuits — or choose a high-output unit (e.g. Powerwall 3).");
+
+  if(flags.length){
+    h+=`<h3>⚠️ Flags to resolve</h3>`+flags.map(f=>`<div class="flag"><b>!</b> ${f}</div>`).join('');
+  } else {
+    h+=`<div class="flag ok"><b>✓</b> No major red flags from the answers given.</div>`;
+  }
+  h+=`</div>`;
+
+  /* disclaimer */
+  h+=`<div class="card"><div class="disclaimer">
+    <b>Indicative planning estimate only.</b> Pricing is modelled on public 2026 Irish market guides, not a quote.
+    The figures live in the <code>PRICING</code> object at the top of this file's script — update them with real
+    quotes/costs and every output recalculates. Final design, loads,
+    structural and electrical compliance must come from an SEAI-registered installer's site survey.
+  </div></div>`;
+
+  $('out').innerHTML=h;
+}
+
+/* ============================ DEMO ============================ */
+function loadDemo(){
+  const set=(id,v)=>{ if($(id)) $(id).value=v; };
+  set('obj_bill',1); set('obj_backup',2); set('obj_future',3); set('obj_export',4); set('obj_evsolar',5);
+  set('outageFreq',4); set('outageDur',10); set('ruralFeeder','yes'); set('backupScope','whole'); set('generator','no');
+  $('mustStayOn').value='Freezer, heating circ pump, broadband, lights';
+  set('phase',1); set('mic',12); set('mainFuse','80'); set('earthing','tt'); set('spareWays','yes'); set('smartMeter','yes'); set('cableRun',8);
+  set('annualKwh',6500); set('dynamicTariff','dayNight'); set('importRate',35); set('nightRate',13); set('dayOccupancy','out'); set('heating','oil');
+  set('mount','roof'); set('orientation',950); set('panelCap',16); set('pitch','ok'); set('cover','tile'); set('roofAge','good'); set('shading','some');
+  set('existingPV','no'); set('brandLean','open'); set('appControl','app'); set('openEco','yes');
+  set('ev','yes'); set('evCharger','want'); set('v2g','no'); set('heatpumpPlan','no'); set('loadShift','yes');
+  set('budget',22000); set('grantEligible','yes'); set('cegRate',20); set('funding','cash');
+  set('planning','no'); set('approach','turnkey');
+  syncConditionals();
+  alert('Example answers loaded. Click "Generate design & plan".');
+}
+
+/* ---- conditional fields: grey out questions that don't apply ---- */
+function setEnabled(id, on){
+  const el=$(id); if(!el) return;
+  el.disabled = !on;
+  const f = el.closest('.field'); if(f) f.style.opacity = on ? '1' : '0.45';
+}
+function syncConditionals(){
+  const hasPV = val('existingPV')==='yes';      // §6 only relevant with existing solar
+  setEnabled('existingKwp', hasPV);
+  setEnabled('existingPlan', hasPV);
+  setEnabled('nightRate', val('dynamicTariff')!=='no');  // §4 night rate needs a day/night tariff
+  setEnabled('v2g', val('ev')!=='no');           // §8 V2G needs an EV
+}
+['existingPV','dynamicTariff','ev'].forEach(id=>{
+  const el=$(id); if(el) el.addEventListener('change', syncConditionals);
+});
+syncConditionals();
+</script>
+</body>
+</html>

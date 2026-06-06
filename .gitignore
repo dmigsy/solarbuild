@@ -1,0 +1,8 @@
+# Local dev / tooling
+.claude/
+fb_text.txt
+*.log
+
+# OS cruft
+Thumbs.db
+.DS_Store
