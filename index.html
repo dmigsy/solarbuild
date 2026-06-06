@@ -327,6 +327,10 @@ const PRICING = {
   },
   // SEAI grant (2026): €700/kWp first 2 kWp, €200/kWp next 2 kWp, cap €1,800.
   grant: kwp => Math.min(1800, Math.min(kwp,2)*700 + Math.max(0,Math.min(kwp,4)-2)*200),
+  // Quote band shown around the point estimate. The model is fitted to the keen /
+  // value end of the market, so the band is asymmetric: a touch below as "a sharp
+  // quote", widening upward toward a typical/premium installer. Tune to taste.
+  quoteBand: { low: 0.95, high: 1.18 },
 };
 
 /* ---------------- objectives table ---------------- */
@@ -355,6 +359,10 @@ const num = id => parseFloat($(id).value)||0;
 const val = id => $(id).value;
 const chk = id => $(id).checked;
 const eur = n => "€"+Math.round(n).toLocaleString('en-IE');
+// round to the nearest €50 so a range reads as guidance, not false precision
+const eurR = n => "€"+(Math.round(n/50)*50).toLocaleString('en-IE');
+const bandLo = n => n*PRICING.quoteBand.low, bandHi = n => n*PRICING.quoteBand.high;
+const eurBand = n => `${eurR(bandLo(n))} – ${eurR(bandHi(n))}`;
 const round1 = n => Math.round(n*10)/10;
 
 /* ============================ ENGINE ============================ */
@@ -603,8 +611,8 @@ function render(a, pv, battery, product, cost, econ, led){
       <span class="tag">${pv.panels} × ${PRICING.panelW}W panels</span>
       <span class="tag">~${pv.annualGen.toLocaleString()} kWh/yr generated</span>
       <span class="tag">${a.phase===3?'3-phase':'single-phase'}</span>
-      <span class="tag">Net cost ${eur(cost.net)}</span>
-      ${econ.payback?`<span class="tag">~${round1(econ.payback)} yr payback</span>`:''}
+      <span class="tag">Net cost ${eurBand(cost.net)}</span>
+      ${econ.payback?`<span class="tag">~${round1(econ.payback*PRICING.quoteBand.low)}–${round1(econ.payback*PRICING.quoteBand.high)} yr payback</span>`:''}
     </div></div>`;
 
   /* PV */
@@ -650,9 +658,10 @@ function render(a, pv, battery, product, cost, econ, led){
       <tr class="total"><td>Subtotal</td><td class="num">${eur(cost.subtotal)}</td></tr>
       ${cost.grant?`<tr class="grant"><td>Less SEAI solar PV grant</td><td class="num">– ${eur(cost.grant)}</td></tr>`:''}
       ${cost.evGrant?`<tr class="grant"><td>Less SEAI EV home-charger grant</td><td class="num">– ${eur(cost.evGrant)}</td></tr>`:''}
-      <tr class="total"><td>Net cost</td><td class="num">${eur(cost.net)}</td></tr>
+      <tr class="total"><td>Net cost (point estimate)</td><td class="num">${eur(cost.net)}</td></tr>
+      <tr class="total"><td>Likely quote range</td><td class="num">${eurBand(cost.net)}</td></tr>
     </table>
-    <p class="muted">Battery &amp; PV bought on one contract qualify for 0% VAT. Solar grant applies to PV only (max €1,800), not the battery. ${a.grantEligible!=="yes"?'<b>Solar grant not applied</b> — property must be connected before end-2020 &amp; installer SEAI-registered. ':''}${cost.evGrant?'The €300 EV home-charger grant is a separate ZEVI/SEAI scheme: homeowner with off-street parking, a charger on the SEAI Smart Charger Register, fitted by a Safe Electric contractor — apply before buying.':''}</p></div>`;
+    <p class="muted"><b>Treat the range, not the point estimate, as the guide.</b> The point figure reflects a competitive / value-end installer; real quotes for the same spec vary roughly ${Math.round((1-PRICING.quoteBand.low)*100)}% below to ${Math.round((PRICING.quoteBand.high-1)*100)}% above, depending on installer, region, panel/inverter tier, scaffolding and extras (BER, optimisers, bird mesh). Get 3 quotes. Battery &amp; PV bought on one contract qualify for 0% VAT. Solar grant applies to PV only (max €1,800), not the battery. ${a.grantEligible!=="yes"?'<b>Solar grant not applied</b> — property must be connected before end-2020 &amp; installer SEAI-registered. ':''}${cost.evGrant?'The €300 EV home-charger grant is a separate ZEVI/SEAI scheme: homeowner with off-street parking, a charger on the SEAI Smart Charger Register, fitted by a Safe Electric contractor — apply before buying.':''}</p></div>`;
 
   /* economics */
   h+=`<div class="card"><h2>📈 Economics (indicative)</h2>
@@ -664,7 +673,7 @@ function render(a, pv, battery, product, cost, econ, led){
       <tr><td>Export income (@ ${Math.round(econ.cegR*100)}c CEG)</td><td class="num">${eur(econ.exportIncome)}/yr</td></tr>
       ${econ.arbSaving>0?`<tr><td>Tariff arbitrage (night→peak)</td><td class="num">${eur(econ.arbSaving)}/yr</td></tr>`:''}
       <tr class="total"><td>Total annual benefit</td><td class="num">${eur(econ.annual)}/yr</td></tr>
-      ${econ.payback?`<tr class="total"><td>Simple payback</td><td class="num">~${round1(econ.payback)} years</td></tr>`:''}
+      ${econ.payback?`<tr class="total"><td>Simple payback</td><td class="num">~${round1(econ.payback*PRICING.quoteBand.low)}–${round1(econ.payback*PRICING.quoteBand.high)} years</td></tr>`:''}
     </table>
     <p class="muted">First €400/yr of export income is tax-free (disregard to end-2028). Payback excludes finance costs &amp; future price inflation; real savings rise as electricity prices climb.</p></div>`;
 
