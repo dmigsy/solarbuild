@@ -301,7 +301,8 @@ const PRICING = {
       : kwp <= 10 ? 780
       : 720,
   groundMountExtra: 1500,      // frames/trenching premium over roof (~€1,500)
-  evCharger: 1100,             // installed 7 kW charger (SEAI €300 EV-charger grant separate)
+  evCharger: 1100,             // installed 7 kW smart charger
+  evChargerGrant: 300,         // SEAI/ZEVI EV Home Charger Grant 2026 (standalone registered charger)
   ttEarthingExtra: 300,        // EPS earth rod / RCD work on TT supplies (earth rod ~€250)
   consumerUnitWork: 700,       // whole-home backup: manual changeover ~€450, Sig auto-gateway ~€1,650
   // Battery products. base = hybrid inverter + install + gateway; perKwh = storage
@@ -516,9 +517,10 @@ function costSystem(a, pv, battery, product){
   const bc = batteryCost(p, battery.kwh);
   rows.push(["Battery + hybrid inverter",`${p.name} — ${bc.detail}`,bc.price]);
 
+  let evGrant = 0;
   if(a.evCharger==="want"){
     if(p.evReady && (a.v2g==="yes")) rows.push(["EV charger","Integrated in Sigenergy (V2G)",600]);
-    else rows.push(["EV charger","7 kW wall charger, installed",PRICING.evCharger]);
+    else { rows.push(["EV charger","7 kW smart wall charger, installed",PRICING.evCharger]); evGrant = PRICING.evChargerGrant; }
   }
   if(a.earthing==="tt" && a.backupScope!=="none") rows.push(["TT earthing / EPS works","Earth rod + RCD arrangement for backup",PRICING.ttEarthingExtra]);
   if(a.backupScope==="whole") rows.push(["Backup change-over / board work","Whole-home EPS integration",PRICING.consumerUnitWork]);
@@ -526,8 +528,8 @@ function costSystem(a, pv, battery, product){
 
   const subtotal = rows.reduce((s,r)=>s+r[2],0);
   const grant = a.grantEligible==="yes" ? PRICING.grant(pv.kwp) : 0;
-  const net = subtotal - grant;
-  return {rows, subtotal, grant, net};
+  const net = subtotal - grant - evGrant;
+  return {rows, subtotal, grant, evGrant, net};
 }
 
 /* ---- economics ---- */
@@ -646,10 +648,11 @@ function render(a, pv, battery, product, cost, econ, led){
       <tr><th>Item</th><th style="text-align:right">Cost (0% VAT)</th></tr>
       ${rows}
       <tr class="total"><td>Subtotal</td><td class="num">${eur(cost.subtotal)}</td></tr>
-      ${cost.grant?`<tr class="grant"><td>Less SEAI grant</td><td class="num">– ${eur(cost.grant)}</td></tr>`:''}
+      ${cost.grant?`<tr class="grant"><td>Less SEAI solar PV grant</td><td class="num">– ${eur(cost.grant)}</td></tr>`:''}
+      ${cost.evGrant?`<tr class="grant"><td>Less SEAI EV home-charger grant</td><td class="num">– ${eur(cost.evGrant)}</td></tr>`:''}
       <tr class="total"><td>Net cost</td><td class="num">${eur(cost.net)}</td></tr>
     </table>
-    <p class="muted">Battery &amp; PV bought on one contract qualify for 0% VAT. Grant applies to PV only (max €1,800), not the battery. ${a.grantEligible!=="yes"?'<b>Grant not applied</b> — property must be connected before end-2020 &amp; installer SEAI-registered.':''}</p></div>`;
+    <p class="muted">Battery &amp; PV bought on one contract qualify for 0% VAT. Solar grant applies to PV only (max €1,800), not the battery. ${a.grantEligible!=="yes"?'<b>Solar grant not applied</b> — property must be connected before end-2020 &amp; installer SEAI-registered. ':''}${cost.evGrant?'The €300 EV home-charger grant is a separate ZEVI/SEAI scheme: homeowner with off-street parking, a charger on the SEAI Smart Charger Register, fitted by a Safe Electric contractor — apply before buying.':''}</p></div>`;
 
   /* economics */
   h+=`<div class="card"><h2>📈 Economics (indicative)</h2>
