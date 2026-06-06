@@ -296,10 +296,10 @@ const PRICING = {
   // inverter (priced once in the battery line). Falls with scale. 0% VAT.
   // Set so PV+battery totals match typical 2026 quotes (e.g. 11 kWp+20 kWh ≈ €16.4k).
   pvRate: kwp =>
-        kwp <= 3 ? 1100
-      : kwp <= 6 ? 850
-      : kwp <= 10 ? 780
-      : 720,
+        kwp <= 3 ? 1150
+      : kwp <= 6 ? 880
+      : kwp <= 10 ? 810
+      : 740,
   groundMountExtra: 1500,      // frames/trenching premium over roof (~€1,500)
   evCharger: 1100,             // installed 7 kW smart charger
   evChargerGrant: 300,         // SEAI/ZEVI EV Home Charger Grant 2026 (standalone registered charger)
@@ -309,16 +309,16 @@ const PRICING = {
   // module. all-in €/kWh = (base + kwh*perKwh)/kwh. Set from typical 2026 module
   // prices (Sig 10 kWh module ~€3k; Dyness 10 kWh add-on ~€1.8k) and system totals.
   batteries: {
-    sigenergy: { name:"Sigenergy SigenStor", base:2800, perKwh:360, min:5, step:5, max:48,
+    sigenergy: { name:"Sigenergy SigenStor", base:2800, perKwh:350, min:5, step:5, max:48,
         phase:[1,3], hybrid:true, eps:"whole", evReady:true, premium:true,
         note:"Premium all-in-one, modular 5–48 kWh, 1- & 3-phase, AI tariff control, auto-gateway backup, optional DC EV charger with V2G/V2H." },
     powerwall: { name:"Tesla Powerwall 3", unit:13.5, perUnit:8000, addUnit:6500,
         phase:[1], hybrid:true, eps:"whole", maxKwh:40.5,
         note:"13.5 kWh LFP with built-in 11.5 kW solar inverter; whole-home backup; Storm Watch. Less common in IE quotes." },
-    solis:     { name:"Solis hybrid + Dyness battery", base:1900, perKwh:330, min:5, step:5, max:30,
+    solis:     { name:"Solis hybrid + Dyness battery", base:1950, perKwh:370, min:5, step:5, max:30,
         phase:[1,3], hybrid:true, eps:"essential",
         note:"Most-quoted value combo in IE: Solis hybrid inverter + Dyness modules, works with a manual changeover switch, mix-and-match batteries." },
-    anker:     { name:"Anker SOLIX all-in-one", base:1850, perKwh:340, min:5, step:5, max:30,
+    anker:     { name:"Anker SOLIX all-in-one", base:1950, perKwh:380, min:5, step:5, max:30,
         phase:[1], hybrid:true, eps:"essential", appGood:true,
         note:"Tidy budget all-in-one, single-phase, well-regarded app; EPS on essential circuits." },
     victron:   { name:"Victron (MultiPlus-II + Pylontech)", base:3200, perKwh:340, min:5, step:5, max:60,
