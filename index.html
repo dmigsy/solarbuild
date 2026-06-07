@@ -96,6 +96,13 @@
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
   td.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.ans td:first-child{color:var(--muted);width:54%;vertical-align:top}
+  table.ans td:last-child{font-weight:500;text-align:left}
+  .anssub{margin:18px 0 4px;font-family:var(--head);font-size:13px;font-weight:700;
+    color:var(--accent-strong);letter-spacing:.01em}
+  .reportmeta{display:flex;justify-content:space-between;align-items:baseline;
+    gap:12px;flex-wrap:wrap;font-size:13px}
+  .reportmeta b{font-size:14px;color:var(--text)}
   tr.total td{border-top:2px solid var(--line2);font-weight:700;border-bottom:none}
   tr.grant td{color:var(--green)}
   ul{margin:8px 0;padding-left:20px}
@@ -922,10 +929,76 @@ function decorateHeadings(root){
   });
 }
 
+/* ---- build a readable "Your answers" summary straight from the live form ---- */
+function answersSummary(){
+  const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const skip=el=>{
+    if(el.disabled) return true;                       // not-applicable / greyed field
+    const fc=el.closest('.field,.rank');
+    if(fc && getComputedStyle(fc).display==='none') return true;  // hidden by plan type
+    return false;
+  };
+  let body='';
+  document.querySelectorAll('#form > fieldset').forEach(fs=>{
+    const legend=fs.querySelector(':scope > legend');
+    let title='';
+    if(legend){
+      const ln=legend.querySelector('.legnum'), lt=legend.querySelector('.legttl');
+      title = (ln&&lt) ? ln.textContent.trim()+' · '+lt.textContent.trim()
+                       : legend.textContent.replace(/\s+/g,' ').trim();
+    }
+    const rows=[];
+
+    // section 1 — objective ranks
+    fs.querySelectorAll('.rank').forEach(r=>{
+      const sel=r.querySelector('select'); if(!sel||skip(sel)||!sel.value) return;
+      const lbl=(r.querySelector('span')||{}).textContent||sel.id;
+      rows.push([lbl.trim(), 'Rank '+sel.value]);
+    });
+
+    // big electrical loads — collapse ticked checkboxes into one row
+    const loads=[];
+    fs.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+      if(cb.checked && !skip(cb)){ const wl=cb.closest('label'); loads.push((wl?wl.textContent:cb.id).trim()); }
+    });
+    if(loads.length) rows.push(['Big electrical loads', loads.join(', ')]);
+
+    // remaining inputs / selects / textareas
+    fs.querySelectorAll('input,select,textarea').forEach(el=>{
+      if(el.type==='checkbox' || el.closest('.rank') || skip(el)) return;
+      let lbl='';
+      const lf=el.id?document.querySelector('label[for="'+(window.CSS&&CSS.escape?CSS.escape(el.id):el.id)+'"]'):null;
+      if(lf){ lbl=lf.cloneNode(true); lbl.querySelectorAll('.req').forEach(n=>n.remove()); lbl=lbl.textContent; }
+      else lbl=el.getAttribute('aria-label')||el.id;
+      lbl=(lbl||'').replace(/\s+/g,' ').trim();
+      let v = el.tagName==='SELECT' ? (el.options[el.selectedIndex]||{}).text||'' : el.value;
+      v=(v||'').replace(/\s+/g,' ').trim();
+      if(v==='') return;                                // skip unanswered/blank fields
+      rows.push([lbl, v]);
+    });
+
+    if(rows.length){
+      body+='<div class="anssub">'+esc(title)+'</div><table class="ans">'
+        + rows.map(([l,v])=>'<tr><td>'+esc(l)+'</td><td>'+esc(v)+'</td></tr>').join('')
+        + '</table>';
+    }
+  });
+  return '<div class="card"><h2>📝 Your answers</h2>'
+    + '<p class="muted">A record of what you entered, for reference and to share with installers.</p>'
+    + body + '</div>';
+}
+
 /* ============================ RENDER ============================ */
 function render(a, pv, battery, product, cost, econ, led){
   const p=product.primary;
   let h='';
+
+  /* date/time stamp + report header (prints at the top of the PDF) */
+  const stamp = new Date().toLocaleString('en-IE',
+    {day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const reportHead = `<div class="card reportmeta">
+    <b>Solar + Battery Discovery — indicative design</b>
+    <span class="muted">Generated ${stamp}</span></div>`;
 
   /* battery label used in a couple of places */
   const batLabel = battery.kwh>0
@@ -1014,7 +1087,7 @@ function render(a, pv, battery, product, cost, econ, led){
   /* ---- assemble in the requested order:
      headline → system diagram → recommended products → indicative costing
      → then the supporting detail (array, inverter, battery, economics) ---- */
-  h = headline + diagram + productsCard + costingCard + econCard + pvCard + inverterCard + batteryCard + h;
+  h = reportHead + headline + diagram + productsCard + costingCard + econCard + pvCard + inverterCard + batteryCard + h;
 
   /* install plan + flags */
   h+=`<div class="card"><h2>🛠️ Installation plan</h2><ol>
@@ -1052,6 +1125,9 @@ function render(a, pv, battery, product, cost, econ, led){
     quotes/costs and every output recalculates. Final design, loads,
     structural and electrical compliance must come from an SEAI-registered installer's site survey.
   </div></div>`;
+
+  /* full record of the user's answers (appendix — also included in the PDF) */
+  h += answersSummary();
 
   $('out').innerHTML=h;
   decorateHeadings($('out'));
