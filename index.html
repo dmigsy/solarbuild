@@ -145,6 +145,12 @@
     header,form,.btnrow,.noprint{display:none!important}
     .card{break-inside:avoid;border-color:#e2e2e2;background:#fff;box-shadow:none}
     .card h2{color:#000}
+    /* the answers card is taller than a page — let it flow across pages,
+       but keep each row and its sub-heading from splitting awkwardly */
+    .card.answers{break-inside:auto}
+    .card.answers .anssub{break-after:avoid;break-inside:avoid}
+    table.ans,table.ans tbody{break-inside:auto}
+    table.ans tr{break-inside:avoid}
   }
 </style>
 </head>
@@ -983,7 +989,7 @@ function answersSummary(){
         + '</table>';
     }
   });
-  return '<div class="card"><h2>📝 Your answers</h2>'
+  return '<div class="card answers"><h2>📝 Your answers</h2>'
     + '<p class="muted">A record of what you entered, for reference and to share with installers.</p>'
     + body + '</div>';
 }
