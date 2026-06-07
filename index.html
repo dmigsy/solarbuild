@@ -287,14 +287,16 @@
     <p class="fdesc">Where the panels go &mdash; this sets how many you can fit and how much power they&rsquo;ll make.</p>
     <div class="grid">
       <div class="field"><label for="mount">Where would the panels go?</label>
-        <select id="mount"><option value="roof">On the roof</option><option value="ground">On the ground (frames in the garden/field)</option><option value="both">Both</option></select></div>
+        <select id="mount"><option value="roof">On the roof</option><option value="ground">On the ground (frames in the garden/field)</option><option value="both">Both</option></select>
+        <div class="hint">Ground mount usually lets you pick the ideal due-south angle and fit more panels (~20+), at roughly €1,500&ndash;3,000 more than the equivalent roof install.</div></div>
       <div class="field"><label for="orientation">Which way does the best roof face?</label>
         <select id="orientation">
           <option value="950">South</option>
-          <option value="890">South-East / South-West</option>
-          <option value="800">East / West</option>
-          <option value="820">East + West split</option>
-          <option value="780">Flat / other</option>
+          <option value="860">South-East / South-West</option>
+          <option value="750">East / West</option>
+          <option value="760">East + West split</option>
+          <option value="800">Flat / other</option>
+          <option value="550">North</option>
         </select></div>
       <div class="field"><label for="panelCap">Roughly how many panels could fit?</label><input type="number" id="panelCap" step="1" inputmode="numeric" placeholder="e.g. 16 — leave blank if unsure">
         <div class="hint">A rough count of panels the roof could hold. Each is about 1.8 m × 1.1 m; most house roofs fit 8&ndash;20. Not sure? Leave it blank and we&rsquo;ll size from your usage.</div></div>
@@ -416,7 +418,7 @@
    reproduce typical before/after-grant system prices. Edit freely.
    ========================================================================= */
 const PRICING = {
-  panelW: 440,                 // W per panel (2026 typical)
+  panelW: 500,                 // W per panel (2026 typical)
   // PV €/kWp — panels + mounting + scaffold + labour + DC wiring, EXCLUDING the
   // inverter (priced once in the battery line). Falls with scale. 0% VAT.
   // These constants are the KEEN / best-value installed price — the LOW end of the
@@ -427,7 +429,8 @@ const PRICING = {
       : kwp <= 6 ? 850
       : kwp <= 10 ? 780
       : 720,
-  groundMountExtra: 1500,      // frames/trenching premium over roof (~€1,500)
+  groundMountExtra: 2250,      // frames/trenching premium over roof (~€1.5–3k; midpoint)
+  optimiserPerPanel: 50,       // panel-level optimiser (per panel) for shaded / mixed-aspect strings
   evCharger: 1100,             // installed 7 kW smart charger
   evChargerGrant: 300,         // SEAI/ZEVI EV Home Charger Grant 2026 (standalone registered charger)
   ttEarthingExtra: 300,        // EPS earth rod / RCD work on TT supplies (earth rod ~€250)
@@ -436,7 +439,7 @@ const PRICING = {
   // module. all-in €/kWh = (base + kwh*perKwh)/kwh. Set from typical 2026 module
   // prices (Sig 10 kWh module ~€3k; Dyness 10 kWh add-on ~€1.8k) and system totals.
   batteries: {
-    sigenergy: { name:"Sigenergy SigenStor", base:2400, perKwh:350, min:5, step:5, max:48,
+    sigenergy: { name:"Sigenergy SigenStor", base:2200, perKwh:330, min:5, step:5, max:48,
         phase:[1,3], hybrid:true, eps:"whole", evReady:true, premium:true,
         note:"Premium all-in-one, modular 5–48 kWh, 1- & 3-phase, AI tariff control, auto-gateway backup, optional DC EV charger with V2G/V2H." },
     powerwall: { name:"Tesla Powerwall 3", unit:13.5, perUnit:8000, addUnit:6500,
@@ -680,6 +683,13 @@ function costSystem(a, pv, battery, product){
   const p = product.primary.p;
   if(a.mount==="ground"||a.mount==="both") pvCost += PRICING.groundMountExtra;
   rows.push(["PV array (panels + mounting + install)",`${pv.panels}× ${PRICING.panelW}W = ${pv.kwp} kWp — inverter in battery line`,pvCost]);
+
+  // panel-level optimisers: heavy shading optimises the whole array; an East+West
+  // split mixes aspects on a string, so that string's panels (~11) need optimisers.
+  let optPanels = 0;
+  if(a.shading==="heavy") optPanels = pv.panels;
+  else if(a.orientation===760) optPanels = Math.min(pv.panels, 11);
+  if(optPanels>0) rows.push(["Panel optimisers",`${optPanels}× optimiser — shaded / mixed-aspect string(s)`,optPanels*PRICING.optimiserPerPanel]);
 
   if(battery.kwh>0){
     const bc = batteryCost(p, battery.kwh);
@@ -1108,7 +1118,9 @@ function render(a, pv, battery, product, cost, econ, led){
   if(a.phase===3 && p.key==="powerwall") flags.push("Powerwall 3 is single-phase per unit — 3-phase backup needs one per phase. Sigenergy/Solis handle 3-phase natively.");
   if(a.spareWays==="no") flags.push("Fuse board reported full — may need a sub-board or upgrade to add the backup circuits.");
   if(a.roofAge==="poor") flags.push("Poor roof condition — re-roof or repair before mounting; panels last 25+ yrs.");
-  if(a.shading==="heavy") flags.push("Significant shading — use optimisers/micro-inverters or generation will disappoint.");
+  if(a.shading==="heavy") flags.push(`Significant shading — panel-level optimisers/micro-inverters (~€${PRICING.optimiserPerPanel}/panel, costed above) recommended or generation will disappoint.`);
+  if(a.orientation===760) flags.push(`East + West split puts mixed aspects on one inverter string — those panels (~11) typically need optimisers (~€${PRICING.optimiserPerPanel} each, costed above).`);
+  if(pv.panels>22 && p.key!=="powerwall") flags.push(`${pv.panels} panels exceeds a typical 2-string (2-MPPT) hybrid inverter (~11 panels per string). May need a larger inverter, a second unit, or a 3-MPPT model.`);
   if(a.mount!=="roof" && a.planning==="yes") flags.push("Ground mount on a sensitive/coastal/protected site — check planning exemption limits before proceeding.");
   if(a.smartMeter==="no") flags.push("No smart meter yet — needed for CEG export payments &amp; for dynamic-tariff arbitrage. Request one.");
   if(a.mic>0 && a.phase===1 && a.mic<12) flags.push(`Low MIC (${a.mic} kVA) on single-phase — heavy simultaneous loads (EV + immersion + heat pump) may trip; consider load management.`);
