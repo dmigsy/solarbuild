@@ -4,99 +4,131 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Solar + Battery Discovery → Design Tool (Ireland 2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0f1419; --panel:#171f2a; --panel2:#1d2733; --line:#2b3848;
-    --text:#e7edf3; --muted:#9fb0c0; --accent:#ffb000; --accent2:#33c481;
-    --blue:#4ea1ff; --red:#ff6b6b; --radius:10px;
+    --bg:#fafaf9; --card:#ffffff; --field:#ffffff; --line:#e7e5e4; --line2:#d6d3d1;
+    --text:#292524; --muted:#78716c; --accent:#f59e0b; --accent-ink:#1c1917; --accent-strong:#b45309;
+    --green:#059669; --green-bg:#ecfdf5; --green-line:#a7f3d0;
+    --blue:#0284c7; --red:#dc2626; --red-bg:#fef2f2; --red-line:#fecaca;
+    --radius:14px; --head:'Plus Jakarta Sans',system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(15,15,15,.05);
+    --shadow-card:0 1px 3px rgba(15,15,15,.06),0 1px 2px rgba(15,15,15,.04);
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    background:var(--bg);color:var(--text);line-height:1.5}
-  header{padding:24px 20px;border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg,#16202b,#0f1419)}
-  header h1{margin:0 0 4px;font-size:22px}
-  header p{margin:0;color:var(--muted);font-size:14px;max-width:760px}
-  .wrap{max-width:980px;margin:0 auto;padding:20px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+
+  /* ---- header ---- */
+  header{padding:26px 20px 24px;border-bottom:1px solid var(--line);background:#ffffff}
+  .head-in{max-width:980px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:13px}
+  .logo{flex:0 0 auto;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(160deg,#fbbf24,#f59e0b);color:#fff;box-shadow:0 2px 10px rgba(245,158,11,.35)}
+  header h1{margin:0;font-family:var(--head);font-size:23px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+  .brand .sub{margin:2px 0 0;color:var(--accent-strong);font-size:13px;font-weight:600}
+  header .lede{margin:16px 0 0;color:var(--muted);font-size:14px;max-width:790px;line-height:1.6}
+  header .lede b{color:var(--text);font-weight:600}
+
+  .wrap{max-width:980px;margin:0 auto;padding:24px 20px 48px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:720px){.grid{grid-template-columns:1fr}}
-  fieldset{border:1px solid var(--line);border-radius:var(--radius);
-    background:var(--panel);margin:0 0 16px;padding:16px}
-  legend{padding:0 8px;margin-left:-8px;font-weight:600;color:var(--accent);font-size:15px}
-  legend small{display:block;color:var(--muted);font-weight:400;font-size:12px;
-    padding-top:2px;max-width:640px}
-  label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
-  legend.grouplabel{padding:0;margin-left:0;font-weight:400;font-size:13px;color:var(--muted)}
-  .field{margin:0 0 12px}
-  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);
-    color:var(--text);border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit}
-  input:focus,select:focus,textarea:focus{border-color:var(--blue)}
-  /* visible keyboard-focus ring (accessibility) — distinct from hover/active */
+
+  /* ---- form ---- */
+  fieldset{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+    margin:0 0 18px;padding:22px 22px 10px;box-shadow:var(--shadow-card)}
+  legend{float:left;width:100%;display:flex;align-items:center;gap:11px;padding:0;margin:0 0 6px}
+  legend + *{clear:both}
+  .legnum{flex:0 0 auto;width:27px;height:27px;border-radius:8px;display:grid;place-items:center;
+    background:#fffbeb;box-shadow:inset 0 0 0 1px #fde68a;color:var(--accent-strong);font-weight:700;font-size:13px}
+  .legttl{font-family:var(--head);font-weight:700;font-size:17px;color:var(--text);letter-spacing:-.01em}
+  legend.grouplabel{display:block;padding:0;margin:0 0 4px;font-weight:600;font-size:13px;color:var(--text)}
+  label{display:block;font-size:13px;color:var(--text);font-weight:500;margin:0 0 5px}
+  .field{margin:0 0 14px}
+  input,select,textarea{width:100%;background:var(--field);border:1px solid var(--line2);
+    color:var(--text);border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;
+    box-shadow:0 1px 2px rgba(15,15,15,.04);transition:border-color .12s,box-shadow .12s}
+  input::placeholder,textarea::placeholder{color:#a8a29e}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.18)}
+  /* visible keyboard-focus ring (accessibility) */
   input:focus-visible,select:focus-visible,textarea:focus-visible,
   button:focus-visible,a:focus-visible,[tabindex]:focus-visible{
-    outline:3px solid var(--blue);outline-offset:2px}
+    outline:2px solid var(--blue);outline-offset:2px}
   textarea{resize:vertical;min-height:54px}
-  /* per-section description, aligned with the fields (not tucked under the legend) */
-  .fdesc{margin:-4px 0 14px;color:var(--muted);font-size:13px;max-width:680px}
-  .req{color:var(--accent)}
-  .err{color:var(--red);font-size:12px;margin-top:4px;display:none}
+  .fdesc{margin:-2px 0 16px;color:var(--muted);font-size:13.5px;max-width:680px;line-height:1.55}
+  .req{color:var(--accent-strong)}
+  .err{color:var(--red);font-size:12px;margin-top:5px;display:none;font-weight:500}
   .err.show{display:block}
-  input[aria-invalid="true"]{border-color:var(--red)}
+  input[aria-invalid="true"]{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,38,38,.15)}
   .rank{display:grid;grid-template-columns:1fr 132px;align-items:center;
-    gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+    gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
   .rank:last-child{border-bottom:none}
   .rank span{font-size:14px;color:var(--text)}
   .rank select{width:100%}
-  .hint{font-size:12px;color:var(--muted);margin-top:3px}
-  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 30px}
-  button{cursor:pointer;border:none;border-radius:8px;padding:12px 22px;
-    font-size:15px;font-weight:600}
-  .primary{background:var(--accent);color:#1a1200}
-  .ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+  /* ---- buttons ---- */
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 0}
+  button{cursor:pointer;border:none;border-radius:10px;padding:12px 20px;
+    font-size:14.5px;font-weight:600;font-family:inherit;transition:transform .04s,box-shadow .12s,background .12s}
+  button:active{transform:translateY(1px)}
+  .primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 1px 2px rgba(15,15,15,.12)}
+  .primary:hover{background:#ea8f08}
+  .ghost{background:#fff;color:#44403c;border:1px solid var(--line2);box-shadow:0 1px 2px rgba(15,15,15,.05)}
+  .ghost:hover{background:#fafaf9}
   /* ---- output ---- */
-  #out{display:none}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    padding:18px;margin:0 0 16px}
-  .card h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
-  .card h3{margin:14px 0 6px;font-size:14px;color:var(--blue)}
-  .headline{background:linear-gradient(135deg,#1c2a1f,#16202b);border-color:#2f4a39}
-  .headline .big{font-size:20px;font-weight:700;margin:0 0 6px}
-  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);
-    border-radius:20px;padding:3px 12px;font-size:12px;margin:0 6px 6px 0;color:var(--muted)}
-  table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-  th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  #out{display:none;margin-top:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;margin:0 0 16px;box-shadow:var(--shadow-card)}
+  .card h2{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-family:var(--head);
+    font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+  .chico{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:#fffbeb;box-shadow:inset 0 0 0 1px #fde68a;color:var(--accent-strong)}
+  .chico svg{width:17px;height:17px;display:block}
+  .card h3{margin:16px 0 7px;font-family:var(--head);font-size:14px;font-weight:700;color:var(--text)}
+  .headline{background:linear-gradient(165deg,#fffbeb,#ffffff);border:1px solid #fde68a;box-shadow:var(--shadow-card)}
+  .headline .big{font-family:var(--head);font-size:21px;font-weight:700;line-height:1.3;margin:0 0 10px;color:var(--text);letter-spacing:-.01em}
+  .tag{display:inline-block;background:#fafaf9;border:1px solid var(--line);
+    border-radius:7px;padding:4px 11px;font-size:12px;margin:0 6px 6px 0;color:#57534e;font-weight:500}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
   td.num{text-align:right;font-variant-numeric:tabular-nums}
-  tr.total td{border-top:2px solid var(--line);font-weight:700;border-bottom:none}
-  tr.grant td{color:var(--accent2)}
-  ul{margin:6px 0;padding-left:20px}
-  li{margin:4px 0;font-size:14px}
-  .flag{background:#241a1a;border:1px solid #4a2f2f;border-radius:8px;padding:10px 12px;
-    margin:6px 0;font-size:13px}
-  .flag b{color:var(--red)}
-  .ok{background:#16241c;border-color:#2f4a39}
-  .ok b{color:var(--accent2)}
-  .pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
-  .pill.b{background:#23344a;color:var(--blue)}
-  .pill.g{background:#1c3327;color:var(--accent2)}
-  .alt{border-left:3px solid var(--line);padding:6px 0 6px 12px;margin:8px 0}
+  tr.total td{border-top:2px solid var(--line2);font-weight:700;border-bottom:none}
+  tr.grant td{color:var(--green)}
+  ul{margin:8px 0;padding-left:20px}
+  li{margin:5px 0;font-size:14px;color:var(--text)}
+  li::marker{color:var(--accent)}
+  .flag{display:flex;gap:11px;align-items:flex-start;background:var(--red-bg);border:1px solid var(--red-line);
+    border-radius:10px;padding:12px 14px;margin:8px 0;font-size:13.5px;line-height:1.5;color:var(--text)}
+  .flag b{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:700;margin-top:1px}
+  .ok{background:var(--green-bg);border-color:var(--green-line)}
+  .ok b{background:var(--green)}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:7px;font-size:12px;font-weight:600}
+  .pill.b{background:#e0f2fe;color:#0369a1;box-shadow:inset 0 0 0 1px rgba(2,132,199,.2)}
+  .pill.g{background:var(--green-bg);color:#047857;box-shadow:inset 0 0 0 1px rgba(5,150,105,.2)}
+  .alt{border-left:3px solid #fde68a;padding:8px 0 8px 14px;margin:10px 0;font-size:14px}
   .alt b{color:var(--text)}
-  .muted{color:var(--muted);font-size:13px}
-  .disclaimer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);
-    padding-top:12px;margin-top:10px}
+  .muted{color:var(--muted);font-size:13px;line-height:1.55}
+  code{background:#f5f5f4;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
+  .disclaimer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);
+    padding-top:14px;margin-top:12px;line-height:1.6}
   /* ---- system diagram ---- */
-  .diagram{width:100%;height:auto;display:block;background:radial-gradient(120% 140% at 18% 0%,#16232e,#121922 60%);border-radius:8px;border:1px solid var(--line)}
-  .diagram .wire{fill:none;stroke:var(--line);stroke-width:5;stroke-linecap:round}
-  .diagram .flow{fill:none;stroke:var(--accent2);stroke-width:3.2;stroke-linecap:round;
-    stroke-dasharray:7 13;animation:flow 1s linear infinite;filter:drop-shadow(0 0 3px rgba(51,196,129,.7))}
-  .diagram .node{fill:var(--panel2);stroke:var(--line);stroke-width:1.5}
-  .diagram .lbl{fill:var(--muted);font-size:13px;font-family:system-ui,sans-serif}
-  .diagram .val{fill:var(--text);font-size:14px;font-weight:700;font-family:system-ui,sans-serif}
+  .diagram{width:100%;height:auto;display:block;background:linear-gradient(180deg,#f8fafc,#f1f5f9);border-radius:12px;border:1px solid var(--line)}
+  .diagram .wire{fill:none;stroke:#dcd9d5;stroke-width:5;stroke-linecap:round}
+  .diagram .flow{fill:none;stroke:#10b981;stroke-width:3.2;stroke-linecap:round;
+    stroke-dasharray:7 13;animation:flow 1s linear infinite;filter:drop-shadow(0 0 2px rgba(16,185,129,.45))}
+  .diagram .node{fill:#ffffff;stroke:#e7e5e4;stroke-width:1.5}
+  .diagram .lbl{fill:#78716c;font-size:13px;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+  .diagram .val{fill:#292524;font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
   .diagram .sun-glow{animation:sunpulse 3.5s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
   .diagram .sun-rays{animation:sunrays 60s linear infinite;transform-origin:center;transform-box:fill-box}
-  .diagram .arrow{fill:var(--accent2)}
+  .diagram .arrow{fill:#10b981}
   @keyframes flow{to{stroke-dashoffset:-40}}
-  @keyframes sunpulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.08)}}
+  @keyframes sunpulse{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.8;transform:scale(1.08)}}
   @keyframes sunrays{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion: reduce){
     .diagram .flow,.diagram .sun-glow,.diagram .sun-rays{animation:none}
@@ -104,17 +136,27 @@
   @media print{
     body{background:#fff;color:#000}
     header,form,.btnrow,.noprint{display:none!important}
-    .card{break-inside:avoid;border-color:#ccc;background:#fff}
+    .card{break-inside:avoid;border-color:#e2e2e2;background:#fff;box-shadow:none}
     .card h2{color:#000}
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>☀️ Solar + Battery Discovery → Design Tool</h1>
-  <p>Answer the discovery questionnaire below, then generate an indicative PV sizing, inverter &amp;
-  battery design, product shortlist, costing and installation plan. Tuned for Irish domestic installs,
-  2026 pricing &amp; SEAI grant rules. <b>Indicative only</b> — confirm with an SEAI-registered installer's site survey.</p>
+  <div class="head-in">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><g stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><line x1="12" y1="1.8" x2="12" y2="4.4"/><line x1="12" y1="19.6" x2="12" y2="22.2"/><line x1="1.8" y1="12" x2="4.4" y2="12"/><line x1="19.6" y1="12" x2="22.2" y2="12"/><line x1="4.8" y1="4.8" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.2" y2="19.2"/><line x1="4.8" y1="19.2" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="19.2" y2="4.8"/></g></svg>
+      </span>
+      <div>
+        <h1>Solar + Battery Discovery</h1>
+        <p class="sub">Design tool · Irish homes · 2026</p>
+      </div>
+    </div>
+    <p class="lede">Answer the discovery questionnaire below, then generate an indicative PV sizing, inverter &amp;
+    battery design, product shortlist, costing and installation plan. Tuned for Irish domestic installs,
+    2026 pricing &amp; SEAI grant rules. <b>Indicative only</b> — confirm with an SEAI-registered installer&rsquo;s site survey.</p>
+  </div>
 </header>
 
 <div class="wrap" role="main">
@@ -715,7 +757,7 @@ function collect(){
 /* ===================== SYSTEM DIAGRAM (animated SVG) ===================== */
 function systemDiagram(a, pv, battery, product){
   const key = product.primary.key;
-  const invColor = BRAND_COLORS[key] || '#4ea1ff';
+  const invColor = BRAND_COLORS[key] || '#f59e0b';
   const invName  = product.primary.p.name.replace(/\s*\(.*$/,'').split(' + ')[0]; // short name
   const hasEV = a.evCharger==='want' || a.evCharger==='have';
   const hasBackup = a.backupScope!=='none';
@@ -739,18 +781,18 @@ function systemDiagram(a, pv, battery, product){
     flows+=`<path class="flow" d="${d}" marker-end="url(#ah)"/>`;
   });
   // green power begins at the PANELS (not the sun). PA = panel output anchor.
-  const PA = ground ? {x:240,y:200} : {x:248,y:226};
+  const PA = ground ? {x:240,y:200} : {x:234,y:243};
   const wPan=`M ${PA.x} ${PA.y} C ${PA.x+60} ${PA.y}, 330 235, 385 235`;
   wires=`<path class="wire" d="${wPan}"/>`+wires;
   flows=`<path class="flow" d="${wPan}" marker-end="url(#ah)"/>`+flows;
   // sunlight shown as faint yellow beams (light, not electrical power)
-  const beams=`<g stroke="#ffce4d" stroke-width="2.5" stroke-linecap="round" opacity=".5" stroke-dasharray="2 8"><line x1="116" y1="96" x2="146" y2="150"/><line x1="134" y1="90" x2="176" y2="150"/><line x1="98" y1="98" x2="118" y2="150"/></g>`;
+  const beams=`<g stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" opacity=".6" stroke-dasharray="2 8"><line x1="116" y1="96" x2="146" y2="150"/><line x1="134" y1="90" x2="176" y2="150"/><line x1="98" y1="98" x2="118" y2="150"/></g>`;
 
   /* --- icons --- */
-  const iconBattery=(cx,c)=>`<g stroke="#33c481" fill="none" stroke-width="2"><rect x="${cx-13}" y="${c-9}" width="22" height="18" rx="2"/><rect x="${cx+9}" y="${c-4}" width="3" height="8" fill="#33c481"/><rect x="${cx-10}" y="${c-6}" width="5" height="12" fill="#33c481" stroke="none"/><rect x="${cx-3}" y="${c-6}" width="5" height="12" fill="#33c481" stroke="none" opacity=".55"/></g>`;
-  const iconHouse=(cx,c)=>`<g stroke="#9fb0c0" fill="none" stroke-width="2" stroke-linejoin="round"><path d="M${cx-12} ${c+10} V${c-1} L${cx} ${c-12} L${cx+12} ${c-1} V${c+10} Z"/></g>`;
-  const iconEV=(cx,c)=>`<g stroke="#9fb0c0" fill="none" stroke-width="2" stroke-linejoin="round"><path d="M${cx-13} ${c+6} h26 v-7 l-4 -6 h-18 l-4 6 z"/><circle cx="${cx-7}" cy="${c+6}" r="2.4" fill="#9fb0c0"/><circle cx="${cx+7}" cy="${c+6}" r="2.4" fill="#9fb0c0"/><path d="M${cx+13} ${c-3} h5 v6" stroke="#33c481"/></g>`;
-  const iconGrid=(cx,c)=>`<g stroke="#9fb0c0" fill="none" stroke-width="2"><path d="M${cx-9} ${c+11} L${cx-5} ${c-11} H${cx+5} L${cx+9} ${c+11}"/><path d="M${cx-7} ${c-2} H${cx+7}"/><path d="M${cx-8} ${c+4} H${cx+8}"/><path d="M${cx-5} ${c-8} H${cx+5}"/></g>`;
+  const iconBattery=(cx,c)=>`<g stroke="#059669" fill="none" stroke-width="2"><rect x="${cx-13}" y="${c-9}" width="22" height="18" rx="2"/><rect x="${cx+9}" y="${c-4}" width="3" height="8" fill="#059669"/><rect x="${cx-10}" y="${c-6}" width="5" height="12" fill="#059669" stroke="none"/><rect x="${cx-3}" y="${c-6}" width="5" height="12" fill="#059669" stroke="none" opacity=".55"/></g>`;
+  const iconHouse=(cx,c)=>`<g stroke="#78716c" fill="none" stroke-width="2" stroke-linejoin="round"><path d="M${cx-12} ${c+10} V${c-1} L${cx} ${c-12} L${cx+12} ${c-1} V${c+10} Z"/></g>`;
+  const iconEV=(cx,c)=>`<g stroke="#78716c" fill="none" stroke-width="2" stroke-linejoin="round"><path d="M${cx-13} ${c+6} h26 v-7 l-4 -6 h-18 l-4 6 z"/><circle cx="${cx-7}" cy="${c+6}" r="2.4" fill="#78716c"/><circle cx="${cx+7}" cy="${c+6}" r="2.4" fill="#78716c"/><path d="M${cx+13} ${c-3} h5 v6" stroke="#059669"/></g>`;
+  const iconGrid=(cx,c)=>`<g stroke="#78716c" fill="none" stroke-width="2"><path d="M${cx-9} ${c+11} L${cx-5} ${c-11} H${cx+5} L${cx+9} ${c+11}"/><path d="M${cx-7} ${c-2} H${cx+7}"/><path d="M${cx-8} ${c+4} H${cx+8}"/><path d="M${cx-5} ${c-8} H${cx+5}"/></g>`;
   const ICON={battery:iconBattery,house:iconHouse,ev:iconEV,grid:iconGrid};
 
   const META={
@@ -775,43 +817,62 @@ function systemDiagram(a, pv, battery, product){
     const auto = (key==='sigenergy'||key==='powerwall'||key==='victron');
     switchSvg=`<g>
       <rect class="node" x="${mx-30}" y="${my-19}" width="60" height="38" rx="9"/>
-      <circle cx="${mx-14}" cy="${my}" r="3.5" fill="#9fb0c0"/><circle cx="${mx+14}" cy="${my}" r="3.5" fill="#9fb0c0"/>
-      <path d="M${mx-14} ${my} L${mx+11} ${my-9}" stroke="#33c481" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="${mx-14}" cy="${my}" r="3.5" fill="#78716c"/><circle cx="${mx+14}" cy="${my}" r="3.5" fill="#78716c"/>
+      <path d="M${mx-14} ${my} L${mx+11} ${my-9}" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
       <text class="lbl" x="${mx}" y="${my+33}" text-anchor="middle">${auto?'Auto gateway':'Changeover'}</text>
     </g>`;
   }
 
   /* --- panels: a house for roof-mount, a tilted frame for ground-mount --- */
-  const panelGrid=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#13314f" stroke="#2f6cb0" stroke-width="2"/>`
-    + `<path d="M${x+w*0.25} ${y} V${y+h} M${x+w*0.5} ${y} V${y+h} M${x+w*0.75} ${y} V${y+h} M${x} ${y+h/2} H${x+w}" stroke="#2f6cb0" stroke-width="1.3" opacity=".8"/>`;
+  const panelGrid=(x,y,w,h)=>{
+    const cols=Math.max(3,Math.round(w/20)), rows=Math.max(1,Math.round(h/16));
+    let g='';
+    for(let i=1;i<cols;i++){const lx=(x+w*i/cols).toFixed(1); g+=`<line x1="${lx}" y1="${y}" x2="${lx}" y2="${y+h}" stroke="#0284c7" stroke-width="1" opacity=".4"/>`;}
+    for(let j=1;j<rows;j++){const ly=(y+h*j/rows).toFixed(1); g+=`<line x1="${x}" y1="${ly}" x2="${x+w}" y2="${ly}" stroke="#0284c7" stroke-width="1" opacity=".4"/>`;}
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="#a8d8f5" stroke="#0369a1" stroke-width="1.6"/>`
+      + g
+      + `<path d="M${x+3} ${y+h-3} L${x+w*0.42} ${y+3}" stroke="#fff" stroke-width="2.4" opacity=".3" stroke-linecap="round"/>`;
+  };
   let panels;
   if(ground){
     panels = panelGrid(58,150,178,86)
-      + `<path d="M96 236 V300 M198 236 V300 M96 272 H198 M236 236 V300" stroke="#3a4a5c" stroke-width="3" fill="none" stroke-linecap="round"/>`
-      + `<rect x="40" y="300" width="220" height="13" rx="6" fill="#1d3a28"/>`
+      + `<path d="M96 236 V300 M198 236 V300 M96 272 H198 M236 236 V300" stroke="#a8a29e" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      + `<rect x="40" y="300" width="220" height="13" rx="6" fill="#e7e5e4"/>`
       + `<text class="val" x="147" y="338" text-anchor="middle">${pv.panels} × ${PRICING.panelW}W</text>`
       + `<text class="lbl" x="147" y="356" text-anchor="middle">ground-mount</text>`;
   } else {
-    panels = `<rect x="84" y="246" width="150" height="80" rx="4" fill="#1c2632" stroke="#3a4a5c" stroke-width="2"/>`
-      + `<polygon points="68,250 159,189 250,250" fill="#222e3d" stroke="#3a4a5c" stroke-width="2" stroke-linejoin="round"/>`
-      + `<rect x="146" y="288" width="26" height="38" rx="2" fill="#2b3848"/>`
-      + `<rect x="100" y="266" width="24" height="22" rx="2" fill="#33455c"/>`
-      + `<g transform="translate(166,193) rotate(33)">${panelGrid(0,0,78,30)}</g>`
-      + `<text class="val" x="159" y="346" text-anchor="middle">${pv.panels} × ${PRICING.panelW}W</text>`
-      + `<text class="lbl" x="159" y="364" text-anchor="middle">roof-mount</text>`;
+    panels =
+        `<line x1="62" y1="330" x2="264" y2="330" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>`
+      + `<rect x="100" y="252" width="124" height="78" rx="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>`
+      + `<path d="M82 256 L162 192 L242 256 Z" fill="#dbe4ee" stroke="#94a3b8" stroke-width="2.4" stroke-linejoin="round"/>`
+      + `<rect x="104" y="210" width="14" height="30" rx="1.5" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.6"/>`
+      + `<rect x="114" y="290" width="26" height="40" rx="2" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.6"/>`
+      + `<circle cx="134" cy="311" r="1.8" fill="#64748b"/>`
+      + `<rect x="160" y="280" width="34" height="30" rx="2" fill="#bae6fd" stroke="#94a3b8" stroke-width="1.6"/>`
+      + `<path d="M177 280 V310 M160 295 H194" stroke="#94a3b8" stroke-width="1.2"/>`
+      + `<g transform="translate(172,196) rotate(33)">${panelGrid(0,0,80,16)}</g>`
+      + `<text class="val" x="162" y="352" text-anchor="middle">${pv.panels} × ${PRICING.panelW}W</text>`
+      + `<text class="lbl" x="162" y="370" text-anchor="middle">roof-mount</text>`;
   }
 
   /* --- sun --- */
-  let rays=''; for(let i=0;i<8;i++){ const ang=i*45*Math.PI/180, x1=108+Math.cos(ang)*26,y1=70+Math.sin(ang)*26,x2=108+Math.cos(ang)*34,y2=70+Math.sin(ang)*34; rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#ffce4d" stroke-width="3" stroke-linecap="round"/>`; }
-  const sun=`<circle class="sun-glow" cx="108" cy="70" r="40" fill="#ffb000" opacity=".22"/>`
-    + `<g class="sun-rays">${rays}</g><circle cx="108" cy="70" r="19" fill="#ffce4d"/>`;
+  let rays=''; for(let i=0;i<8;i++){ const ang=i*45*Math.PI/180, x1=108+Math.cos(ang)*26,y1=70+Math.sin(ang)*26,x2=108+Math.cos(ang)*34,y2=70+Math.sin(ang)*34; rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>`; }
+  const sun=`<circle class="sun-glow" cx="108" cy="70" r="40" fill="#f59e0b" opacity=".2"/>`
+    + `<g class="sun-rays">${rays}</g><circle cx="108" cy="70" r="19" fill="#fbbf24"/>`;
 
-  /* --- inverter (brand-coloured hub) --- */
-  const invX=385, invY=190, invW=120, invH=90;
-  const inverter=`<rect x="${invX}" y="${invY}" width="${invW}" height="${invH}" rx="14" fill="${invColor}" stroke="#0e1620" stroke-width="2"/>`
-    + `<path d="M${invX+30} ${invY+34} q9 -16 18 0 q9 16 18 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>`
-    + `<text x="${invX+invW/2}" y="${invY+62}" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="system-ui,sans-serif">${invName}</text>`
-    + `<text x="${invX+invW/2}" y="${invY+78}" text-anchor="middle" fill="#ffffffcc" font-size="11" font-family="system-ui,sans-serif">${product.primary.p.hybrid?'hybrid inverter':'inverter'}</text>`;
+  /* --- inverter (brand-coloured wall device) --- */
+  const invX=385, invY=190, invW=120, invH=92;
+  const cxI=invX+invW/2;
+  const inverter=
+      `<rect x="${invX+3}" y="${invY+6}" width="${invW}" height="${invH}" rx="16" fill="rgba(15,23,42,.12)"/>`
+    + `<rect x="${invX}" y="${invY}" width="${invW}" height="${invH}" rx="16" fill="${invColor}" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/>`
+    + `<path d="M${invX} ${invY+30} V${invY+16} a16 16 0 0 1 16 -16 H${invX+invW-16} a16 16 0 0 1 16 16 V${invY+30} Z" fill="#fff" opacity=".14"/>`
+    + `<rect x="${invX+20}" y="${invY+13}" width="${invW-40}" height="28" rx="6" fill="#0b1220" stroke="rgba(255,255,255,.22)" stroke-width="1"/>`
+    + `<path d="M${invX+30} ${invY+27} q6 -10 12 0 q6 10 12 0 q6 -10 12 0" stroke="#34d399" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+    + `<circle cx="${invX+invW-30}" cy="${invY+21}" r="2.2" fill="#34d399"/><circle cx="${invX+invW-30}" cy="${invY+30}" r="2.2" fill="#fbbf24"/>`
+    + `<text x="${cxI}" y="${invY+57}" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="700" font-family="'Plus Jakarta Sans',system-ui,sans-serif">${invName}</text>`
+    + `<text x="${cxI}" y="${invY+71}" text-anchor="middle" fill="#ffffffcc" font-size="10.5" font-family="'Plus Jakarta Sans',system-ui,sans-serif">${product.primary.p.hybrid?'hybrid inverter':'inverter'}</text>`
+    + `<g stroke="#fff" stroke-opacity=".38" stroke-width="2" stroke-linecap="round"><line x1="${cxI-16}" y1="${invY+83}" x2="${cxI+16}" y2="${invY+83}"/><line x1="${cxI-10}" y1="${invY+87}" x2="${cxI+10}" y2="${invY+87}"/></g>`;
 
   const svg=`<svg class="diagram" viewBox="0 0 900 460" width="100%" height="auto" role="img"
       aria-label="System diagram: ${pv.panels} panels, ${invName} inverter, ${battery.kwh} kWh battery${hasEV?', EV charger':''}${hasBackup?', backup switch':''}, grid connection, with power flowing from the sun through the system.">
@@ -824,6 +885,41 @@ function systemDiagram(a, pv, battery, product){
     ${svg}
     <p class="muted" style="margin-top:10px">Green shows electricity flowing on a sunny day: sun → panels → inverter, then out to your battery, home${hasEV?', EV charger':''} and the grid.</p>
   </div>`;
+}
+
+/* ============ heading icons (replace emoji with crisp SVG tiles) ============ */
+const ICONS={
+  zap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h6l-1 8 9-11h-6l1-7z"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></svg>',
+  plug:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6M7 8h10v3a5 5 0 0 1-10 0V8zM12 16v6"/></svg>',
+  battery:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="15" height="9" rx="2"/><path d="M21 11v3M7 11v3M11 11v3"/></svg>',
+  euro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a6 6 0 1 0 0 10M4 11h9M4 14h8"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+  wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.5-.5-.5-2.5 2.6-2.6z"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>',
+};
+function pickIcon(t){
+  if(/your system/i.test(t)) return 'zap';
+  if(/product/i.test(t))     return 'box';
+  if(/solar array/i.test(t)) return 'sun';
+  if(/inverter/i.test(t))    return 'plug';
+  if(/^battery/i.test(t))    return 'battery';
+  if(/costing/i.test(t))     return 'euro';
+  if(/economic/i.test(t))    return 'chart';
+  if(/installation/i.test(t))return 'wrench';
+  if(/flag/i.test(t))        return 'alert';
+  return 'zap';
+}
+function decorateHeadings(root){
+  root.querySelectorAll('h2,h3').forEach(el=>{
+    const raw=(el.textContent||'').trim();
+    if(/^[A-Za-z(]/.test(raw)) return;            // plain subhead (no leading emoji) — leave as-is
+    const title=raw.replace(/^[^A-Za-z(]+/, '').trim();
+    if(!title) return;
+    const safe=title.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    el.innerHTML='<span class="chico">'+ICONS[pickIcon(title)]+'</span><span>'+safe+'</span>';
+  });
 }
 
 /* ============================ RENDER ============================ */
@@ -958,6 +1054,7 @@ function render(a, pv, battery, product, cost, econ, led){
   </div></div>`;
 
   $('out').innerHTML=h;
+  decorateHeadings($('out'));
 }
 
 /* ============================ DEMO ============================ */
@@ -1015,6 +1112,15 @@ function syncConditionals(){
   const el=$(id); if(el) el.addEventListener('change', syncConditionals);
 });
 syncConditionals();
+
+/* number-badge the ten section legends */
+document.querySelectorAll('#form > fieldset > legend').forEach(lg=>{
+  const m=lg.textContent.match(/^\s*(\d+)\s*·\s*([\s\S]+)$/);
+  if(m){
+    const ttl=m[2].trim().replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    lg.innerHTML='<span class="legnum">'+m[1]+'</span><span class="legttl">'+ttl+'</span>';
+  }
+});
 </script>
 </body>
 </html>
