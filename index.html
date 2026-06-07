@@ -1134,6 +1134,11 @@ function render(a, pv, battery, product, cost, econ, led){
   /* full record of the user's answers (appendix — also included in the PDF) */
   h += answersSummary();
 
+  /* print button at the foot of the results (excluded from the PDF itself) */
+  h += `<div class="btnrow noprint" style="margin-top:4px">
+    <button type="button" class="primary" onclick="window.print()">Print / save PDF</button>
+  </div>`;
+
   $('out').innerHTML=h;
   decorateHeadings($('out'));
 }
