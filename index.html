@@ -265,6 +265,9 @@
         <select id="dayOccupancy"><option value="out">Usually out 9&ndash;5 (low daytime use)</option><option value="mixed">Mixed</option><option value="home">Home most days</option></select></div>
       <div class="field"><label for="heating">Heating type</label>
         <select id="heating"><option value="gas">Gas</option><option value="oil">Oil</option><option value="electric">Electric (storage/panel)</option><option value="heatpump">Heat pump</option></select></div>
+      <div class="field"><label for="hotWaterDiverter">Add a solar hot-water diverter?</label>
+        <select id="hotWaterDiverter"><option value="no">No</option><option value="yes">Yes &mdash; heat water with spare solar</option></select>
+        <div class="hint">A device (e.g. myenergi eddi) that sends surplus solar to your immersion instead of exporting it &mdash; handy if you heat water by immersion. Adds ~&euro;700 installed.</div></div>
     </div>
     <fieldset class="field subset" style="border:none;padding:0;margin:0"><legend class="grouplabel">Big electrical loads you have</legend>
       <div class="hint" style="margin:-2px 0 8px">Tick any &mdash; high-power items affect peak demand and what a battery can keep running in a power cut.</div>
@@ -338,9 +341,13 @@
       <div class="field"><label for="brandLean">Brand leaning</label>
         <select id="brandLean">
           <option value="open">Open / no preference</option>
-          <option value="powerwall">Tesla Powerwall</option>
           <option value="sigenergy">Sigenergy</option>
-          <option value="value">Value brands (Solis+Dyness / Anker)</option>
+          <option value="powerwall">Tesla Powerwall</option>
+          <option value="value">Value combo (Solis + Dyness / Soluna)</option>
+          <option value="anker">Anker SOLIX</option>
+          <option value="goodwe">Goodwe</option>
+          <option value="ecoflow">EcoFlow PowerOcean</option>
+          <option value="saj">SAJ (budget / long warranty)</option>
           <option value="victron">Victron (off-grid / DIY)</option>
         </select></div>
       <div class="field"><label for="appControl">App &amp; automation</label>
@@ -419,20 +426,20 @@
    ========================================================================= */
 const PRICING = {
   panelW: 500,                 // W per panel (2026 typical)
-  // PV €/kWp — panels + mounting + scaffold + labour + DC wiring, EXCLUDING the
-  // inverter (priced once in the battery line). Falls with scale. 0% VAT.
-  // These constants are the KEEN / best-value installed price — the LOW end of the
-  // quoted range (≈ a sharp installer / the group-expert "should cost" view). The
-  // typical-installer HIGH end is this × installerPremium below.
-  pvRate: kwp =>
-        kwp <= 3 ? 1100
-      : kwp <= 6 ? 850
-      : kwp <= 10 ? 800
-      : 740,
+  // PV cost = a FIXED install/overhead (scaffold, DC wiring, commissioning, BER,
+  // overhead/margin — the inverter is priced once in the battery line) + a per-panel
+  // marginal (panel + rail + labour). This fixed+marginal shape matches the group
+  // "should cost" heuristic (~€200/panel marginal, high fixed base) far better than a
+  // flat €/kWp, which over-priced big arrays and under-priced small ones.
+  // These are the KEEN / best-value figures — the LOW end of the quoted range; the
+  // typical-installer HIGH end is this × quoteBand.high below.
+  pvFixed: 2000,               // fixed scaffold + install + DC + commissioning + BER
+  pvPerPanel: 260,             // marginal per panel (panel + mounting + labour)
   groundMountExtra: 1800,      // frames/trenching premium over roof (~€1.5–3k; lower end on bigger arrays)
   optimiserPerPanel: 50,       // panel-level optimiser (per panel) for shaded / mixed-aspect strings
   evCharger: 1100,             // installed 7 kW smart charger
   evChargerGrant: 300,         // SEAI/ZEVI EV Home Charger Grant 2026 (standalone registered charger)
+  hotWaterDiverter: 700,       // myenergi eddi-type solar hot-water diverter, installed
   ttEarthingExtra: 300,        // EPS earth rod / RCD work on TT supplies (earth rod ~€250)
   consumerUnitWork: 700,       // whole-home backup: manual changeover ~€450, Sig auto-gateway ~€1,650
   // Battery products. base = hybrid inverter + install + gateway; perKwh = storage
@@ -440,19 +447,28 @@ const PRICING = {
   // Pylontech/Anker) run ~€250/kWh; Sigenergy's proprietary modules carry a premium
   // (~€340/kWh) so its lead over the value combo widens with battery size.
   batteries: {
-    sigenergy: { name:"Sigenergy SigenStor", base:2100, perKwh:340, min:5, step:5, max:48,
-        phase:[1,3], hybrid:true, eps:"whole", evReady:true, premium:true,
-        note:"Premium all-in-one, modular 5–48 kWh, 1- & 3-phase, AI tariff control, auto-gateway backup, optional DC EV charger with V2G/V2H." },
-    powerwall: { name:"Tesla Powerwall 3", unit:13.5, perUnit:8000, addUnit:6500,
+    sigenergy: { name:"Sigenergy SigenStor", tier:"premium", base:2100, perKwh:340, min:5, step:5, max:48,
+        phase:[1,3], hybrid:true, eps:"whole", evReady:true, premium:true, appGood:true,
+        note:"Premium all-in-one, modular 5–48 kWh, 1- & 3-phase, AI tariff control, auto-gateway backup, optional DC EV charger with V2G/V2H. Proprietary (more expensive) battery modules." },
+    powerwall: { name:"Tesla Powerwall 3", tier:"premium", unit:13.5, perUnit:8000, addUnit:6500,
         phase:[1], hybrid:true, eps:"whole", maxKwh:40.5,
         note:"13.5 kWh LFP with built-in 11.5 kW solar inverter; whole-home backup; Storm Watch. Less common in IE quotes." },
-    solis:     { name:"Solis hybrid + Dyness battery", base:2100, perKwh:250, min:5, step:5, max:30,
+    solis:     { name:"Solis hybrid + Dyness/Soluna battery", tier:"value", base:2100, perKwh:250, min:5, step:5, max:30,
         phase:[1,3], hybrid:true, eps:"essential",
-        note:"Most-quoted value combo in IE: Solis hybrid inverter + Dyness modules, works with a manual changeover switch, mix-and-match batteries." },
-    anker:     { name:"Anker SOLIX all-in-one", base:2100, perKwh:250, min:5, step:5, max:30,
+        note:"Most-quoted value combo in IE: Solis hybrid inverter + commodity modules (Dyness or Soluna), manual changeover switch, mix-and-match batteries." },
+    anker:     { name:"Anker SOLIX all-in-one", tier:"value", base:2100, perKwh:250, min:5, step:5, max:30,
         phase:[1], hybrid:true, eps:"essential", appGood:true,
         note:"Tidy budget all-in-one, single-phase, well-regarded app; EPS on essential circuits." },
-    victron:   { name:"Victron (MultiPlus-II + Pylontech)", base:3200, perKwh:250, min:5, step:5, max:60,
+    goodwe:    { name:"Goodwe hybrid + battery", tier:"mid", base:2200, perKwh:300, min:5, step:5, max:40,
+        phase:[1,3], hybrid:true, eps:"essential", appGood:true,
+        note:"Established mid-tier hybrid inverter (1- & 3-phase) with stackable modules; widely installed, solid app, sits between the value combos and the premium all-in-ones." },
+    ecoflow:   { name:"EcoFlow PowerOcean", tier:"premium", base:2600, perKwh:320, min:5, step:5, max:40,
+        phase:[1], hybrid:true, eps:"whole", appGood:true,
+        note:"Newer premium all-in-one with whole-home backup and a strong consumer app; stackable 5 kWh modules, single-phase." },
+    saj:       { name:"SAJ hybrid + battery", tier:"value", base:1900, perKwh:220, min:5, step:5, max:30,
+        phase:[1,3], hybrid:true, eps:"essential",
+        note:"Budget end of the market — keenly priced, often with a long (15-yr) warranty. App/software is basic but the hardware is well proven." },
+    victron:   { name:"Victron (MultiPlus-II + Pylontech)", tier:"premium", base:3200, perKwh:250, min:5, step:5, max:60,
         phase:[1,3], hybrid:true, eps:"whole", offgrid:true,
         note:"Off-grid / prosumer ecosystem: bulletproof, endlessly configurable, best-in-class generator + multi-source integration and true island-mode. Needs expertise to commission; engineer-facing VRM app. Overkill (and pricier) for a standard grid-tie install." },
   },
@@ -471,6 +487,9 @@ const BRAND_COLORS = {
   sigenergy: '#ff7a1a',  // Sigen orange
   solis:     '#00a3a3',  // teal
   anker:     '#00b3c4',  // cyan
+  goodwe:    '#d81e3f',  // Goodwe red
+  ecoflow:   '#1aa34a',  // EcoFlow green
+  saj:       '#6d4fc0',  // purple
 };
 
 /* ---------------- objectives table ---------------- */
@@ -641,7 +660,7 @@ function pickProduct(a, battery){
     if(a.backupScope==="whole" && p.eps==="whole"){ s+=2; r.push("whole-home backup"); }
     if((a.ev==="yes"||a.ev==="planned") && a.v2g==="yes" && p.evReady){ s+=3; r.push("integrated EV charger + V2G/V2H"); }
     if(a.appControl==="app" && (key==="sigenergy"||p.appGood)){ s+=1; r.push("strong app/automation"); }
-    if(a.funding!=="cash" || a.budget>0){ if(key==="solis"||key==="anker"){ s+=1; r.push("better value"); } }
+    if(a.funding!=="cash" || a.budget>0){ if(p.tier==="value"){ s+=1; r.push("better value"); } }
     // Victron / off-grid signals. Concrete drivers (a generator to integrate, DIY
     // appetite) carry the weight; a mere self-sufficiency *leaning* (#2) is left to
     // Sigenergy's big modular battery. Victron only wins on a generator/DIY signal
@@ -655,7 +674,7 @@ function pickProduct(a, battery){
       s+=off;
     }
     if(a.brandLean===key){ s+=4; r.push("matches your brand leaning"); }
-    if(a.brandLean==="value" && (key==="solis"||key==="anker")){ s+=3; r.push("value brand"); }
+    if(a.brandLean==="value" && p.tier==="value"){ s+=3; r.push("value brand"); }
     return {key,p,score:s,reasons:r};
   };
   for(const k in B){ const c=score(k,B[k]); if(c) cand.push(c); }
@@ -680,7 +699,8 @@ function batteryCost(p, kwh){
 }
 function costSystem(a, pv, battery, product){
   const rows=[];
-  let pvCost = pv.kwp * PRICING.pvRate(pv.kwp);
+  // PV = fixed install/overhead + per-panel marginal (inverter is in the battery line)
+  let pvCost = PRICING.pvFixed + pv.panels * PRICING.pvPerPanel;
   const p = product.primary.p;
   if(a.mount==="ground"||a.mount==="both") pvCost += PRICING.groundMountExtra;
   rows.push(["PV array (panels + mounting + install)",`${pv.panels}× ${PRICING.panelW}W = ${pv.kwp} kWp — inverter in battery line`,pvCost]);
@@ -704,6 +724,7 @@ function costSystem(a, pv, battery, product){
     if(p.evReady && (a.v2g==="yes")) rows.push(["EV charger","Integrated in Sigenergy (V2G)",600]);
     else { rows.push(["EV charger","7 kW smart wall charger, installed",PRICING.evCharger]); evGrant = PRICING.evChargerGrant; }
   }
+  if(a.hotWaterDiverter==="yes") rows.push(["Hot-water diverter","myenergi eddi (or similar), installed — surplus solar to the immersion",PRICING.hotWaterDiverter]);
   if(a.earthing==="tt" && a.backupScope!=="none") rows.push(["TT earthing / EPS works","Earth rod + RCD arrangement for backup",PRICING.ttEarthingExtra]);
   if(a.backupScope==="whole") rows.push(["Backup change-over / board work","Whole-home EPS integration",PRICING.consumerUnitWork]);
   if(a.cableRun>15) rows.push(["Extended cable run",`${a.cableRun} m meter→inverter`,Math.round((a.cableRun-15)*22)]);
@@ -760,7 +781,7 @@ function collect(){
     earthing:val('earthing'), spareWays:val('spareWays'), smartMeter:val('smartMeter'), cableRun:num('cableRun'),
     annualKwh:num('annualKwh'), dynamicTariff:val('dynamicTariff'),
     peakRate:num('peakRate'),
-    dayOccupancy:val('dayOccupancy'), heating:val('heating'),
+    dayOccupancy:val('dayOccupancy'), heating:val('heating'), hotWaterDiverter:val('hotWaterDiverter'),
     loads:{ immersion:chk('loadImmersion'), shower:chk('loadShower'), dryer:chk('loadDryer'),
             dish:chk('loadDish'), oven:chk('loadOven'), ac:chk('loadAC'),
             hottub:chk('loadHotTub'), pool:chk('loadPool'), workshop:chk('loadWorkshop') },
