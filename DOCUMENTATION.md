@@ -29,15 +29,16 @@ Complete technical documentation for the tool in `index.html`. Aimed at Ireland,
 
 ## 1. What it is
 
-A single self-contained HTML page. A homeowner answers a 10-section discovery questionnaire, clicks
+A small self-contained static web page. A homeowner answers a 10-section discovery questionnaire, clicks
 **Generate**, and gets an **indicative** design: PV array sizing, inverter & topology, battery
 sizing, a product shortlist, an itemised costing (with SEAI grants + 0 % VAT), an economics/payback
 estimate, an animated system diagram, an installation plan with risk flags, and a printable record
 of their answers.
 
-Everything — HTML, CSS, JavaScript, the SVG diagram — lives in **one file**, `index.html`. No build
-step, no dependencies, no backend, works offline. The only network request is a Google Fonts
-stylesheet (Plus Jakarta Sans); the tool functions without it.
+Three files, no build: markup in `index.html`, styles in `css/styles.css`, and the engine plus
+the SVG diagram in `js/app.js` — all loaded by `index.html` via relative paths, so opening the
+file directly still works. No dependencies, no backend, works offline. The only network request
+is a Google Fonts stylesheet (Plus Jakarta Sans); the tool functions without it.
 
 **Pricing is calibrated to typical 2026 Irish installed prices** and is fully editable in one place
 (the `PRICING` object). It is an indicative planning aid, **not a quote** — final design and price

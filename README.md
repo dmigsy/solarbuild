@@ -1,6 +1,6 @@
 # Solar + Battery Discovery → Design Tool (Ireland 2026)
 
-A single-file web tool. The user answers the **Solar + Battery Discovery Questionnaire**,
+A small static web tool (plain HTML/CSS/JS, no build step). The user answers the **Solar + Battery Discovery Questionnaire**,
 clicks **Generate**, and gets an indicative design: PV sizing, inverter/topology, battery
 sizing, a product shortlist, an itemised costing (with SEAI grant + 0% VAT), an economics /
 payback estimate, and a step-by-step installation plan with risk flags.
@@ -8,7 +8,9 @@ payback estimate, and a step-by-step installation plan with risk flags.
 ## Run it
 
 Just open `index.html` in a browser — double-click it, no server or install needed.
-It's fully self-contained (HTML + CSS + JS in one file) and works offline.
+It's fully self-contained (no dependencies or build) and works offline. Styles live in
+`css/styles.css` and the design engine in `js/app.js`, both loaded by `index.html` via
+relative paths, so opening the file directly still works.
 
 - **Fill with example** loads a worked Irish case so you can see the output instantly.
 - **Print / save PDF** produces a clean, form-free copy of the plan to send to a client.
@@ -29,8 +31,8 @@ The cost model is set to **typical 2026 Irish installed prices**. The figures be
 representative market benchmarks for common system sizes — the model reproduces them to within
 a few percent, so its costings track real-world pricing rather than list prices.
 
-Every price lives in one editable place — the `PRICING` object at the top of the `<script>`
-block in `index.html`. Drop in your own quotes and every output recalculates.
+Every price lives in one editable place — the `PRICING` object at the top of `js/app.js`.
+Drop in your own quotes and every output recalculates.
 
 ### Representative 2026 system prices the model reproduces (grant = €1,800 flat ≥ 4 kWp)
 
@@ -115,3 +117,7 @@ Indicative planning aid, **not a quote and not engineering sign-off**. It assume
 yields and self-consumption fractions, and simple payback (no finance cost or price inflation).
 Final loads, structural/electrical compliance and the real price must come from an
 SEAI-registered installer's site survey.
+
+## License
+
+[MIT](LICENSE) © 2026 David J. Milligan.
